@@ -62,7 +62,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 320)
+        .frame(width: 540)
         .disabled(isConnecting)
         .alert("Could Not Connect", isPresented: Binding(
             get: { connectError != nil },
@@ -165,17 +165,13 @@ struct SettingsView: View {
         Button("Edit Connection") {
             beginEditing(prefill: true)
         }
-
-        Button("Disconnect", role: .destructive) {
-            disconnect()
-        }
     }
 
     private var connectionFooter: String {
         if showsEditor {
             String(localized: "Credentials are verified with the server before they are saved. Uses official TRMNL headers ID and Access-Token.")
         } else {
-            String(localized: "This Mac acts as one LaraPaper device. Disconnect to remove saved credentials.")
+            String(localized: "This Mac acts as one LaraPaper device. Edit the connection to change server details.")
         }
     }
 
@@ -256,14 +252,5 @@ struct SettingsView: View {
 
         isEditing = false
         session.reloadConfiguration()
-    }
-
-    private func disconnect() {
-        settings.clearCredentials()
-        isEditing = false
-        draftBaseURL = ""
-        draftDeviceID = ""
-        draftAccessToken = ""
-        session.disconnect()
     }
 }

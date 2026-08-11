@@ -123,17 +123,6 @@ final class AppSettings: ObservableObject {
         return true
     }
 
-    /// Remove saved server credentials and stop using them.
-    func clearCredentials() {
-        lastKeychainError = nil
-        UserDefaults.standard.removeObject(forKey: Keys.baseURL)
-        UserDefaults.standard.removeObject(forKey: Keys.deviceID)
-        try? KeychainStore.deleteAccessToken()
-        baseURLString = ""
-        deviceID = ""
-        accessToken = ""
-    }
-
     func setLaunchAtLogin(_ enabled: Bool) {
         launchAtLoginError = nil
         do {

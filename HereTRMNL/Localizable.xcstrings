@@ -1005,23 +1005,6 @@
         }
       }
     },
-    "Disconnect": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Disconnect"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "断开连接"
-          }
-        }
-      }
-    },
     "Could Not Connect": {
       "extractionState": "manual",
       "localizations": {
@@ -1141,19 +1124,19 @@
         }
       }
     },
-    "This Mac acts as one LaraPaper device. Disconnect to remove saved credentials.": {
+    "This Mac acts as one LaraPaper device. Edit the connection to change server details.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This Mac acts as one LaraPaper device. Disconnect to remove saved credentials."
+            "value": "This Mac acts as one LaraPaper device. Edit the connection to change server details."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "这台 Mac 作为一台 LaraPaper 设备。断开连接将清除已保存的凭证。"
+            "value": "这台 Mac 作为一台 LaraPaper 设备。可通过编辑连接修改服务器信息。"
           }
         }
       }

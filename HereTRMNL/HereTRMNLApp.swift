@@ -72,6 +72,6 @@ struct HereTRMNLApp: App {
                 .environmentObject(settings)
         }
         .windowResizability(.contentSize)
-        .defaultSize(width: 320, height: 520)
+        .defaultSize(width: 540, height: 520)
     }
 }
