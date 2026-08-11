@@ -46,6 +46,41 @@ final class WindowChromeController: ObservableObject {
         lockAspect(to: image.devicePixelSize)
     }
 
+    /// Resize the window so its content area is exactly the device pixel size (points).
+    func restoreStandardSize() {
+        guard let window else { return }
+
+        let target = contentSize
+        window.contentAspectRatio = target
+        window.aspectRatio = target
+        window.contentMinSize = NSSize(
+            width: max(320, target.width * 0.4),
+            height: max(192, target.height * 0.4)
+        )
+
+        let contentRect = NSRect(origin: .zero, size: target)
+        var newFrame = window.frameRect(forContentRect: contentRect)
+
+        let midX = window.frame.midX
+        let midY = window.frame.midY
+        newFrame.origin.x = midX - newFrame.width / 2
+        newFrame.origin.y = midY - newFrame.height / 2
+
+        if let screen = window.screen ?? NSScreen.main {
+            let visible = screen.visibleFrame
+            newFrame.origin.x = min(
+                max(newFrame.origin.x, visible.minX),
+                max(visible.minX, visible.maxX - newFrame.width)
+            )
+            newFrame.origin.y = min(
+                max(newFrame.origin.y, visible.minY),
+                max(visible.minY, visible.maxY - newFrame.height)
+            )
+        }
+
+        window.setFrame(newFrame, display: true, animate: true)
+    }
+
     private func applyChrome() {
         guard let window else { return }
 
@@ -73,12 +108,7 @@ final class WindowChromeController: ObservableObject {
         )
 
         guard resize else { return }
-
-        var frame = window.frame
-        let newHeight = frame.width * size.height / size.width
-        frame.origin.y += frame.height - newHeight
-        frame.size.height = newHeight
-        window.setFrame(frame, display: true, animate: true)
+        restoreStandardSize()
     }
 }
 

@@ -49,6 +49,11 @@ struct HereTRMNLApp: App {
                     windowChrome.isPinned.toggle()
                 }
                 .keyboardShortcut("t", modifiers: [.command])
+
+                Button("Standard Size") {
+                    windowChrome.restoreStandardSize()
+                }
+                .keyboardShortcut("0", modifiers: [.command])
             }
         }
 

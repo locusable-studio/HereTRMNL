@@ -77,6 +77,11 @@ struct DisplayView: View {
                     windowChrome.isPinned.toggle()
                 }
 
+                Button("Standard Size", systemImage: "rectangle.center.inset.filled") {
+                    windowChrome.restoreStandardSize()
+                }
+                .help("Restore the window to the device screen size")
+
                 Button("Refresh", systemImage: "arrow.clockwise") {
                     Task { await session.refresh(manual: true) }
                 }
