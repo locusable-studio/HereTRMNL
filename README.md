@@ -1,19 +1,25 @@
 # HereTRMNL
 
-macOS 26+ app that displays LaraPaper (TRMNL BYOS) screen content in a dedicated window.
+A macOS menu bar app that mirrors your [LaraPaper](https://github.com/usetrmnl) / TRMNL BYOS screen on the desktop.
 
-## What it does
+<p align="center">
+  <img src="docs/screenshot.png" alt="HereTRMNL showing a LaraPaper e-ink screen over the desktop" width="880">
+</p>
 
-- Connects to a custom LaraPaper / TRMNL server as a **single independent device**
-- Polls official `GET /api/display` with firmware headers `ID` + `Access-Token`
-- Downloads and shows `image_url`, refreshing by `refresh_rate`
+## Features
+
+- Lives in the menu bar (no Dock icon)
+- Polls `GET /api/display` with firmware-style `ID` and `Access-Token` headers
+- Shows `image_url` and refreshes on `refresh_rate`
 - Skips redraw when `filename` / `image_name` is unchanged
+- Keep on top, restore device size, window opacity, launch at login
+- Display tone (light / dark / automatic) for e-ink letterboxing
 
 ## Requirements
 
 - macOS 26.0+
 - Xcode 26+
-- A LaraPaper (or compatible) device ID (MAC) and access token
+- A LaraPaper-compatible base URL, device ID (MAC), and access token
 
 ## Build
 
@@ -22,13 +28,13 @@ xcodegen generate
 open HereTRMNL.xcodeproj
 ```
 
-Select the **HereTRMNL** scheme, then Run.
+Select the **HereTRMNL** scheme and Run.
 
 ## Setup
 
-1. Open **Settings** (⌘,)
-2. Enter Base URL (e.g. `https://your-server.example`) — no `/api/display` suffix
-3. Enter Device ID (MAC) and Access Token
+1. Open **Settings** from the menu bar item (or ⌘,)
+2. Enter the base URL (e.g. `https://your-server.example`) — without `/api/display`
+3. Enter Device ID and Access Token
 4. **Save & Connect**
 
-Manual refresh: toolbar button or ⌘R.
+Manual refresh: toolbar button or ⌘R. Quit from the menu bar item or **Options → Quit HereTRMNL**.
