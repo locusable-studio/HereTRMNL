@@ -1,0 +1,33 @@
+name: HereTRMNL
+options:
+  bundleIdPrefix: com.locusable
+  deploymentTarget:
+    macOS: "26.0"
+  xcodeVersion: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
+targets:
+  HereTRMNL:
+    type: application
+    platform: macOS
+    sources:
+      - path: HereTRMNL
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.locusable.heretrmnl
+        PRODUCT_NAME: HereTRMNL
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: HereTRMNL
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+        INFOPLIST_KEY_NSHumanReadableCopyright: ""
+        INFOPLIST_KEY_NSPrincipalClass: NSApplication
+        CODE_SIGN_ENTITLEMENTS: HereTRMNL/HereTRMNL.entitlements
+        ENABLE_HARDENED_RUNTIME: YES
+        SWIFT_STRICT_CONCURRENCY: complete
+    entitlements:
+      path: HereTRMNL/HereTRMNL.entitlements
