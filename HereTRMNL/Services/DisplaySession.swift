@@ -17,6 +17,8 @@ final class DisplaySession: ObservableObject {
     @Published private(set) var nextRefreshAt: Date?
     @Published private(set) var lastRefreshRateSeconds: Int?
     @Published private(set) var deviceContentSize: CGSize?
+    /// True while any display fetch is in flight (poll or manual).
+    @Published private(set) var isRefreshing = false
 
     private let settings: AppSettings
     private let client: DisplayAPIClient
@@ -24,6 +26,7 @@ final class DisplaySession: ObservableObject {
     private var fetchTail: Task<Int, Error>?
     private var generation = 0
     private var lastChangeToken: String?
+    private var refreshDepth = 0
 
     init(settings: AppSettings = .shared, client: DisplayAPIClient = DisplayAPIClient()) {
         self.settings = settings
@@ -40,6 +43,9 @@ final class DisplaySession: ObservableObject {
         pollTask?.cancel()
         generation += 1
         let generation = self.generation
+        if settings.isConfigured, image == nil {
+            phase = .loading
+        }
         pollTask = Task { [weak self] in
             await self?.runLoop(generation: generation)
         }
@@ -89,6 +95,9 @@ final class DisplaySession: ObservableObject {
 
     /// Serializes network work so poll + manual refresh never overlap.
     private func enqueueFetch(forceImageReload: Bool, generation: Int) async throws -> Int {
+        beginRefreshing()
+        defer { endRefreshing() }
+
         let previous = fetchTail
         let task = Task<Int, Error> { @MainActor in
             _ = await previous?.result
@@ -160,5 +169,15 @@ final class DisplaySession: ObservableObject {
         image = nil
         lastChangeToken = nil
         phase = .failed(error.localizedDescription)
+    }
+
+    private func beginRefreshing() {
+        refreshDepth += 1
+        isRefreshing = true
+    }
+
+    private func endRefreshing() {
+        refreshDepth = max(0, refreshDepth - 1)
+        isRefreshing = refreshDepth > 0
     }
 }

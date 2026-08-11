@@ -68,7 +68,7 @@ enum KeychainStore {
         var errorDescription: String? {
             switch self {
             case .unexpectedStatus(let status):
-                return "Keychain error (\(status))"
+                return String(localized: "Keychain error (\(status))")
             }
         }
     }

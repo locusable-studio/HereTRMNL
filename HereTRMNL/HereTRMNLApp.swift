@@ -8,8 +8,11 @@ struct HereTRMNLApp: App {
     @StateObject private var windowChrome: WindowChromeController
 
     init() {
+        SingleInstanceGuard.ensureSingleInstance()
+
         let settings = AppSettings.shared
-        _displaySession = StateObject(wrappedValue: DisplaySession(settings: settings))
+        let session = DisplaySession(settings: settings)
+        _displaySession = StateObject(wrappedValue: session)
 
         let initialSize: NSSize
         if let saved = settings.lastDeviceContentSize {
@@ -18,6 +21,11 @@ struct HereTRMNLApp: App {
             initialSize = WindowChromeController.defaultContentSize
         }
         _windowChrome = StateObject(wrappedValue: WindowChromeController(initialContentSize: initialSize))
+
+        // Start polling as soon as the app launches — don't wait for the first view pass.
+        if !AppRuntime.isRunningTests {
+            session.start()
+        }
     }
 
     var body: some Scene {
@@ -44,6 +52,7 @@ struct HereTRMNLApp: App {
                     Task { await displaySession.refresh(manual: true) }
                 }
                 .keyboardShortcut("r", modifiers: [.command])
+                .disabled(!settings.isConfigured || displaySession.isRefreshing)
 
                 Button(windowChrome.isPinned ? "Unpin" : "Keep on Top") {
                     windowChrome.isPinned.toggle()
@@ -62,5 +71,7 @@ struct HereTRMNLApp: App {
                 .environmentObject(displaySession)
                 .environmentObject(settings)
         }
+        .windowResizability(.contentSize)
+        .defaultSize(width: 320, height: 520)
     }
 }

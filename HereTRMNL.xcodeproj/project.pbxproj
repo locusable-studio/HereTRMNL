@@ -11,11 +11,16 @@
 		212B3EE79671BF95588DD8C2 /* DisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D42556259C6D6B02C175E0FB /* DisplayView.swift */; };
 		3C84E527DC3E063B714E80CA /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B04FCBB63267A7C5BA076A0 /* SettingsView.swift */; };
 		42B47CD3F038F71984D7408F /* DisplayResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D9DCB9F08AE1FB8A1E3932 /* DisplayResponse.swift */; };
+		4F8E544A39EBC495EAA60730 /* DisplayTone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813C3F730CF347600056A501 /* DisplayTone.swift */; };
+		80411ECF2CD6ABA7F3D3767A /* SingleInstanceGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2589EFA4DE79831B2A7E8E0 /* SingleInstanceGuard.swift */; };
 		80901AE3E861E8A53AFF6A49 /* AppRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6DC945C61452A0EBC6B69FB /* AppRuntime.swift */; };
 		8526A0092E8CD2DCBEF26503 /* DisplayAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F118A317A9B739C09F26E8A /* DisplayAPIClient.swift */; };
 		9F1D0E83C78B5C3D662D9EE1 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47BA6D3B09C5BE91D09D6F70 /* AppSettings.swift */; };
+		A5E0AD7E709024E6F29020D8 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = D033B299076790E49B8BF18D /* Localizable.xcstrings */; };
 		B03DD44EE11F72E4A5FCD562 /* HereTRMNLApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F1504826D349931DEA817B4 /* HereTRMNLApp.swift */; };
 		B9E113B9EB4455F103CEDBC7 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBC721454DE4A3A472993997 /* KeychainStore.swift */; };
+		BA23DBAC5C6E4DDB1D08B63D /* LaunchAtLogin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04FD7D11F99F988EAC82E70F /* LaunchAtLogin.swift */; };
+		E37C6011A579E682CBF789BC /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 6088F61218533A8ACDD25922 /* InfoPlist.xcstrings */; };
 		EB1AE06980436C6DF64ADCC5 /* DisplayResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B23058AFB8FFB76567DA54 /* DisplayResponseTests.swift */; };
 		EDFD6B5AA5D036393F2F0C8F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3E25C162C1001E54F46ED7B1 /* Assets.xcassets */; };
 		EF40F26788F3030DF55E868A /* DisplaySession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDB4BE2BE2DE9E726C217BE4 /* DisplaySession.swift */; };
@@ -33,16 +38,21 @@
 
 /* Begin PBXFileReference section */
 		04D9DCB9F08AE1FB8A1E3932 /* DisplayResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayResponse.swift; sourceTree = "<group>"; };
+		04FD7D11F99F988EAC82E70F /* LaunchAtLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLogin.swift; sourceTree = "<group>"; };
 		14565D69B43E54405B0C8BB1 /* WindowChromeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowChromeController.swift; sourceTree = "<group>"; };
 		1B04FCBB63267A7C5BA076A0 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3E25C162C1001E54F46ED7B1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		47BA6D3B09C5BE91D09D6F70 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		6088F61218533A8ACDD25922 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		67CBB733952CE3D2A626EEC6 /* HereTRMNLTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HereTRMNLTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F118A317A9B739C09F26E8A /* DisplayAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayAPIClient.swift; sourceTree = "<group>"; };
+		813C3F730CF347600056A501 /* DisplayTone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayTone.swift; sourceTree = "<group>"; };
 		9E9303745E983739020F5AC1 /* HereTRMNL.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HereTRMNL.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F1504826D349931DEA817B4 /* HereTRMNLApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HereTRMNLApp.swift; sourceTree = "<group>"; };
 		A6B23058AFB8FFB76567DA54 /* DisplayResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayResponseTests.swift; sourceTree = "<group>"; };
+		B2589EFA4DE79831B2A7E8E0 /* SingleInstanceGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleInstanceGuard.swift; sourceTree = "<group>"; };
 		CDB4BE2BE2DE9E726C217BE4 /* DisplaySession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplaySession.swift; sourceTree = "<group>"; };
+		D033B299076790E49B8BF18D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		D42556259C6D6B02C175E0FB /* DisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayView.swift; sourceTree = "<group>"; };
 		EBC721454DE4A3A472993997 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
 		F6DC945C61452A0EBC6B69FB /* AppRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRuntime.swift; sourceTree = "<group>"; };
@@ -76,6 +86,8 @@
 				7F118A317A9B739C09F26E8A /* DisplayAPIClient.swift */,
 				CDB4BE2BE2DE9E726C217BE4 /* DisplaySession.swift */,
 				EBC721454DE4A3A472993997 /* KeychainStore.swift */,
+				04FD7D11F99F988EAC82E70F /* LaunchAtLogin.swift */,
+				B2589EFA4DE79831B2A7E8E0 /* SingleInstanceGuard.swift */,
 				14565D69B43E54405B0C8BB1 /* WindowChromeController.swift */,
 			);
 			path = Services;
@@ -102,6 +114,7 @@
 			isa = PBXGroup;
 			children = (
 				04D9DCB9F08AE1FB8A1E3932 /* DisplayResponse.swift */,
+				813C3F730CF347600056A501 /* DisplayTone.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -112,6 +125,8 @@
 				3E25C162C1001E54F46ED7B1 /* Assets.xcassets */,
 				FC2F7A6230F27E44ADB6D5B8 /* HereTRMNL.entitlements */,
 				9F1504826D349931DEA817B4 /* HereTRMNLApp.swift */,
+				6088F61218533A8ACDD25922 /* InfoPlist.xcstrings */,
+				D033B299076790E49B8BF18D /* Localizable.xcstrings */,
 				D5097E0BAAE64CC572AA762F /* Models */,
 				7A60CFE76DA31307F7BAF7C4 /* Services */,
 				C48CE7D2966DE2140477A939 /* Views */,
@@ -175,6 +190,7 @@
 			knownRegions = (
 				Base,
 				en,
+				"zh-Hans",
 			);
 			mainGroup = 6E800E8E511EBAD523F68A64;
 			minimizedProjectReferenceProxies = 1;
@@ -195,6 +211,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				EDFD6B5AA5D036393F2F0C8F /* Assets.xcassets in Resources */,
+				E37C6011A579E682CBF789BC /* InfoPlist.xcstrings in Resources */,
+				A5E0AD7E709024E6F29020D8 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -218,10 +236,13 @@
 				8526A0092E8CD2DCBEF26503 /* DisplayAPIClient.swift in Sources */,
 				42B47CD3F038F71984D7408F /* DisplayResponse.swift in Sources */,
 				EF40F26788F3030DF55E868A /* DisplaySession.swift in Sources */,
+				4F8E544A39EBC495EAA60730 /* DisplayTone.swift in Sources */,
 				212B3EE79671BF95588DD8C2 /* DisplayView.swift in Sources */,
 				B03DD44EE11F72E4A5FCD562 /* HereTRMNLApp.swift in Sources */,
 				B9E113B9EB4455F103CEDBC7 /* KeychainStore.swift in Sources */,
+				BA23DBAC5C6E4DDB1D08B63D /* LaunchAtLogin.swift in Sources */,
 				3C84E527DC3E063B714E80CA /* SettingsView.swift in Sources */,
+				80411ECF2CD6ABA7F3D3767A /* SingleInstanceGuard.swift in Sources */,
 				07EE3F1B1C302BD911B5B7C7 /* WindowChromeController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -248,16 +269,19 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = HereTRMNL;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSMultipleInstancesProhibited = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.locusable.heretrmnl;
 				PRODUCT_NAME = HereTRMNL;
 				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
 			};
 			name = Release;
@@ -313,6 +337,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -354,16 +379,19 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = HereTRMNL;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_LSMultipleInstancesProhibited = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.locusable.heretrmnl;
 				PRODUCT_NAME = HereTRMNL;
 				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
 			};
 			name = Debug;
@@ -431,6 +459,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;

@@ -14,6 +14,12 @@ final class WindowChromeController: ObservableObject {
 
     private weak var window: NSWindow?
     private var didAttach = false
+    private var isFullScreen = false
+    private var opacity: Double = 1.0
+    private var hideToolbarInFullScreen = true
+    private var backdropColor: NSColor = .windowBackgroundColor
+    private var observers: [NSObjectProtocol] = []
+    private var attachGeneration = 0
 
     init(initialContentSize: NSSize? = nil) {
         if let initialContentSize, initialContentSize.width > 0, initialContentSize.height > 0 {
@@ -24,22 +30,44 @@ final class WindowChromeController: ObservableObject {
     }
 
     func attach(to window: NSWindow) {
-        let isSameWindow = self.window === window
+        attachGeneration += 1
+        let generation = attachGeneration
         self.window = window
-        if !isSameWindow || !didAttach {
-            applyChrome()
-            didAttach = true
+
+        // Never publish / mutate SwiftUI-observed state during a view update pass.
+        DispatchQueue.main.async { [weak self] in
+            guard let self, generation == self.attachGeneration else { return }
+            self.finishAttach(to: window)
         }
-        applyPin()
-        applyAspectRatio(resize: false)
+    }
+
+    func applyDisplayPreferences(
+        opacity: Double,
+        hideToolbarInFullScreen: Bool,
+        backdropColor: NSColor
+    ) {
+        self.opacity = opacity
+        self.hideToolbarInFullScreen = hideToolbarInFullScreen
+        self.backdropColor = backdropColor
+        DispatchQueue.main.async { [weak self] in
+            self?.applyBackdrop()
+            self?.applyOpacity()
+            self?.applyToolbarVisibility()
+        }
     }
 
     func lockAspect(to size: NSSize) {
         guard size.width > 0, size.height > 0 else { return }
         let changed = abs(contentSize.width - size.width) > 0.5
             || abs(contentSize.height - size.height) > 0.5
-        contentSize = size
-        applyAspectRatio(resize: changed)
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            if changed {
+                self.contentSize = size
+            }
+            self.applyAspectRatio(resize: changed)
+        }
     }
 
     func lockAspect(to image: NSImage) {
@@ -81,6 +109,23 @@ final class WindowChromeController: ObservableObject {
         window.setFrame(newFrame, display: true, animate: true)
     }
 
+    private func finishAttach(to window: NSWindow) {
+        guard self.window === window else { return }
+
+        if !didAttach {
+            applyChrome()
+            installObservers(for: window)
+            didAttach = true
+        }
+
+        isFullScreen = window.styleMask.contains(.fullScreen)
+        applyPin()
+        applyBackdrop()
+        applyOpacity()
+        applyToolbarVisibility()
+        applyAspectRatio(resize: false)
+    }
+
     private func applyChrome() {
         guard let window else { return }
 
@@ -89,11 +134,59 @@ final class WindowChromeController: ObservableObject {
         window.titlebarSeparatorStyle = .none
         window.styleMask.insert(.fullSizeContentView)
         window.isMovableByWindowBackground = true
-        window.backgroundColor = .black
+        applyBackdrop()
+    }
+
+    private func applyBackdrop() {
+        window?.backgroundColor = backdropColor
     }
 
     private func applyPin() {
         window?.level = isPinned ? .floating : .normal
+    }
+
+    private func applyOpacity() {
+        window?.alphaValue = CGFloat(opacity)
+    }
+
+    private func applyToolbarVisibility() {
+        guard let window else { return }
+        let hide = hideToolbarInFullScreen && isFullScreen
+        let visible = !hide
+        if window.toolbar?.isVisible != visible {
+            window.toolbar?.isVisible = visible
+        }
+    }
+
+    private func installObservers(for window: NSWindow) {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        observers.removeAll()
+
+        let center = NotificationCenter.default
+        observers.append(center.addObserver(
+            forName: NSWindow.didEnterFullScreenNotification,
+            object: window,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                guard let self else { return }
+                self.isFullScreen = true
+                self.applyToolbarVisibility()
+            }
+        })
+        observers.append(center.addObserver(
+            forName: NSWindow.didExitFullScreenNotification,
+            object: window,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                guard let self else { return }
+                self.isFullScreen = false
+                self.applyToolbarVisibility()
+            }
+        })
     }
 
     private func applyAspectRatio(resize: Bool) {
@@ -123,7 +216,7 @@ extension NSImage {
 
 /// Observes `viewDidMoveToWindow` so chrome is applied when the NSWindow actually exists.
 struct WindowChromeInstaller: NSViewRepresentable {
-    @ObservedObject var controller: WindowChromeController
+    let controller: WindowChromeController
 
     func makeNSView(context: Context) -> WindowAttachView {
         let view = WindowAttachView()
@@ -135,11 +228,9 @@ struct WindowChromeInstaller: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: WindowAttachView, context: Context) {
+        // Intentionally do not call attach here.
         nsView.onWindowChange = { [weak controller] window in
             guard let controller, let window else { return }
-            controller.attach(to: window)
-        }
-        if let window = nsView.window {
             controller.attach(to: window)
         }
     }
@@ -150,6 +241,9 @@ final class WindowAttachView: NSView {
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
-        onWindowChange?(window)
+        let window = self.window
+        DispatchQueue.main.async { [weak self] in
+            self?.onWindowChange?(window)
+        }
     }
 }

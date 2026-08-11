@@ -12,22 +12,22 @@ enum DisplayAPIError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .notConfigured:
-            return "Configure server URL, device ID, and access token in Settings."
+            return String(localized: "Configure server URL, device ID, and access token in Settings.")
         case .invalidBaseURL:
-            return "Server URL is invalid."
+            return String(localized: "Server URL is invalid.")
         case .invalidResponse:
-            return "Server returned an unexpected response."
+            return String(localized: "Server returned an unexpected response.")
         case .decoding(let detail):
-            return "Could not parse display response: \(detail)"
+            return String(localized: "Could not parse display response: \(detail)")
         case .server(let status, let message):
             if let message, !message.isEmpty {
-                return "Server error \(status): \(message)"
+                return String(localized: "Server error \(status): \(message)")
             }
-            return "Server error \(status)."
+            return String(localized: "Server error \(status).")
         case .http(let statusCode):
-            return "HTTP \(statusCode)."
+            return String(localized: "HTTP \(statusCode).")
         case .keychain(let detail):
-            return "Could not save access token: \(detail)"
+            return String(localized: "Could not save access token: \(detail)")
         }
     }
 }
