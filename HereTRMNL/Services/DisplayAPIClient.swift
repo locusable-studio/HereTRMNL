@@ -4,6 +4,7 @@ enum DisplayAPIError: LocalizedError {
     case notConfigured
     case invalidBaseURL
     case invalidResponse
+    case decoding(String)
     case server(status: Int, message: String?)
     case http(statusCode: Int)
 
@@ -15,6 +16,8 @@ enum DisplayAPIError: LocalizedError {
             return "Server URL is invalid."
         case .invalidResponse:
             return "Server returned an unexpected response."
+        case .decoding(let detail):
+            return "Could not parse display response: \(detail)"
         case .server(let status, let message):
             if let message, !message.isEmpty {
                 return "Server error \(status): \(message)"
@@ -54,7 +57,12 @@ struct DisplayAPIClient: Sendable {
             throw DisplayAPIError.http(statusCode: http.statusCode)
         }
 
-        let decoded = try JSONDecoder().decode(DisplayResponse.self, from: data)
+        let decoded: DisplayResponse
+        do {
+            decoded = try JSONDecoder().decode(DisplayResponse.self, from: data)
+        } catch {
+            throw DisplayAPIError.decoding(error.localizedDescription)
+        }
         guard decoded.isSuccess else {
             throw DisplayAPIError.server(status: decoded.status ?? -1, message: decoded.error)
         }

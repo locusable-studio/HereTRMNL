@@ -31,3 +31,6 @@ targets:
         SWIFT_STRICT_CONCURRENCY: complete
     entitlements:
       path: HereTRMNL/HereTRMNL.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.network.client: true

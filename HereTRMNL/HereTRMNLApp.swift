@@ -8,7 +8,6 @@ struct HereTRMNLApp: App {
         Window("HereTRMNL", id: "display") {
             DisplayView()
                 .environmentObject(displaySession)
-                .frame(minWidth: 480, minHeight: 320)
         }
         .defaultSize(width: 800, height: 480)
         .commands {
@@ -24,7 +23,6 @@ struct HereTRMNLApp: App {
         Settings {
             SettingsView()
                 .environmentObject(displaySession)
-                .frame(width: 440, height: 360)
         }
     }
 }

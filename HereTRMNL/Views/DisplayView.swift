@@ -7,109 +7,53 @@ struct DisplayView: View {
     @Environment(\.openSettings) private var openSettings
 
     var body: some View {
-        ZStack {
-            Color.black
-
+        Group {
             if let image = session.image {
                 Image(nsImage: image)
                     .resizable()
-                    .interpolation(.high)
-                    .aspectRatio(contentMode: .fit)
+                    .scaledToFit()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                placeholder
-            }
-        }
-        .overlay(alignment: .bottom) {
-            statusBar
-        }
-        .toolbar {
-            ToolbarItemGroup {
-                Button {
-                    Task { await session.refresh(manual: true) }
-                } label: {
-                    Label("Refresh", systemImage: "arrow.clockwise")
+                    .accessibilityLabel(session.filename ?? String(localized: "Display image"))
+            } else if case .loading = session.phase {
+                ProgressView()
+            } else if case .failed(let message) = session.phase, !settings.isConfigured {
+                ContentUnavailableView {
+                    Label("Set Up Connection", systemImage: "display")
+                } description: {
+                    Text(message)
+                } actions: {
+                    Button("Open Settings") {
+                        openSettings()
+                    }
                 }
-                .disabled(!settings.isConfigured)
-
-                Button {
-                    openSettings()
-                } label: {
-                    Label("Settings", systemImage: "gearshape")
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var placeholder: some View {
-        VStack(spacing: 12) {
-            switch session.phase {
-            case .loading:
-                ProgressView("Loading display…")
-            case .failed(let message):
-                Image(systemName: "exclamationmark.triangle")
-                    .font(.system(size: 36))
-                    .foregroundStyle(.yellow)
-                Text(message)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: 360)
-                if !settings.isConfigured {
-                    Button("Open Settings") { openSettings() }
-                        .buttonStyle(.borderedProminent)
-                } else {
-                    Button("Retry") {
+            } else if case .failed(let message) = session.phase {
+                ContentUnavailableView {
+                    Label("Unable to Load Display", systemImage: "exclamationmark.triangle")
+                } description: {
+                    Text(message)
+                } actions: {
+                    Button("Try Again") {
                         Task { await session.refresh(manual: true) }
                     }
                 }
-            default:
-                Image(systemName: "display")
-                    .font(.system(size: 36))
-                    .foregroundStyle(.secondary)
-                Text("Waiting for display content")
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .padding()
-    }
-
-    private var statusBar: some View {
-        HStack(spacing: 12) {
-            statusLabel
-            Spacer()
-            if let filename = session.filename {
-                Text(filename)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-            }
-            if let rate = session.lastRefreshRateSeconds {
-                Text("\(rate)s")
-            }
-        }
-        .font(.caption.monospaced())
-        .foregroundStyle(.white.opacity(0.75))
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(.black.opacity(0.45))
-    }
-
-    private var statusLabel: some View {
-        Group {
-            switch session.phase {
-            case .idle:
-                Text("Idle")
-            case .loading:
-                Text("Loading…")
-            case .ready:
-                if let updated = session.lastUpdated {
-                    Text("Updated \(updated, style: .relative) ago")
-                } else {
-                    Text("Ready")
+            } else {
+                ContentUnavailableView {
+                    Label("Waiting for Display", systemImage: "display")
+                } description: {
+                    Text("Connect a LaraPaper server in Settings to show the next screen.")
+                } actions: {
+                    Button("Open Settings") {
+                        openSettings()
+                    }
                 }
-            case .failed:
-                Text("Error")
-                    .foregroundStyle(.yellow)
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Refresh", systemImage: "arrow.clockwise") {
+                    Task { await session.refresh(manual: true) }
+                }
+                .disabled(!settings.isConfigured || session.phase == .loading)
             }
         }
     }

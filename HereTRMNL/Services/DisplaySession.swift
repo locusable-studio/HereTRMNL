@@ -110,7 +110,7 @@ final class DisplaySession: ObservableObject {
 
         filename = token
         lastUpdated = Date()
-        let seconds = max(Int(response.refreshRate ?? "") ?? 900, 15)
+        let seconds = response.refreshSeconds
         lastRefreshRateSeconds = seconds
         phase = .ready
         return seconds
