@@ -43,6 +43,7 @@ struct HereTRMNLApp: App {
                     displaySession.start()
                 }
         }
+        .defaultLaunchBehavior(.presented)
         .windowStyle(.hiddenTitleBar)
         .windowToolbarStyle(.unified)
         .defaultSize(
