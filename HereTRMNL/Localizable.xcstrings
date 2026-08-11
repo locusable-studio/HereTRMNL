@@ -988,23 +988,6 @@
         }
       }
     },
-    "Edit Connection": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Edit Connection"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "编辑连接"
-          }
-        }
-      }
-    },
     "Could Not Connect": {
       "extractionState": "manual",
       "localizations": {
@@ -1137,6 +1120,108 @@
           "stringUnit": {
             "state": "translated",
             "value": "这台 Mac 作为一台 LaraPaper 设备。可通过编辑连接修改服务器信息。"
+          }
+        }
+      }
+    },
+    "Edit Connection…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Connection…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "编辑连接…"
+          }
+        }
+      }
+    },
+    "Connect…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "连接…"
+          }
+        }
+      }
+    },
+    "Save": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存"
+          }
+        }
+      }
+    },
+    "Add your LaraPaper server to start showing screens.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add your LaraPaper server to start showing screens."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "添加 LaraPaper 服务器以开始显示画面。"
+          }
+        }
+      }
+    },
+    "Connect to a LaraPaper server to use this Mac as a display device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect to a LaraPaper server to use this Mac as a display device."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "连接到 LaraPaper 服务器，将这台 Mac 用作显示设备。"
+          }
+        }
+      }
+    },
+    "Edit Connection": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit Connection"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "编辑连接"
           }
         }
       }

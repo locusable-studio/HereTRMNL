@@ -4,24 +4,29 @@ struct SettingsView: View {
     @EnvironmentObject private var session: DisplaySession
     @EnvironmentObject private var settings: AppSettings
 
-    @State private var isEditing = false
+    @State private var isShowingConnectionSheet = false
     @State private var draftBaseURL = ""
     @State private var draftDeviceID = ""
     @State private var draftAccessToken = ""
     @State private var isConnecting = false
     @State private var connectError: String?
 
-    private var showsEditor: Bool {
-        !settings.isConfigured || isEditing
-    }
-
     var body: some View {
         Form {
             Section {
-                if showsEditor {
-                    connectionEditor
-                } else {
+                if settings.isConfigured {
                     connectionSummary
+                } else {
+                    ContentUnavailableView {
+                        Label("Set Up Connection", systemImage: "link")
+                    } description: {
+                        Text("Add your LaraPaper server to start showing screens.")
+                    } actions: {
+                        Button("Connect…") {
+                            openConnectionSheet(prefill: false)
+                        }
+                        .keyboardShortcut(.defaultAction)
+                    }
                 }
             } header: {
                 Text("Connection")
@@ -63,7 +68,9 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .frame(width: 540)
-        .disabled(isConnecting)
+        .sheet(isPresented: $isShowingConnectionSheet) {
+            connectionSheet
+        }
         .alert("Could Not Connect", isPresented: Binding(
             get: { connectError != nil },
             set: { if !$0 { connectError = nil } }
@@ -83,54 +90,8 @@ struct SettingsView: View {
         .onAppear {
             settings.refreshLaunchAtLoginStatus()
             if !settings.isConfigured {
-                beginEditing(prefill: false)
+                openConnectionSheet(prefill: false)
             }
-        }
-    }
-
-    @ViewBuilder
-    private var connectionEditor: some View {
-        TextField(
-            "Server URL",
-            text: $draftBaseURL,
-            prompt: Text("https://example.com")
-        )
-        .textContentType(.URL)
-        .autocorrectionDisabled()
-
-        TextField(
-            "Device ID",
-            text: $draftDeviceID,
-            prompt: Text("AA:BB:CC:DD:EE:FF")
-        )
-        .autocorrectionDisabled()
-
-        SecureField(
-            "Access Token",
-            text: $draftAccessToken
-        )
-
-        Button {
-            Task { await connect() }
-        } label: {
-            if isConnecting {
-                ProgressView()
-                    .controlSize(.small)
-                    .frame(maxWidth: .infinity)
-            } else {
-                Text(settings.isConfigured ? "Save Connection" : "Connect")
-                    .frame(maxWidth: .infinity)
-            }
-        }
-        .keyboardShortcut(.defaultAction)
-        .disabled(isConnecting || !draftLooksComplete)
-
-        if isEditing, settings.isConfigured {
-            Button("Cancel", role: .cancel) {
-                isEditing = false
-                connectError = nil
-            }
-            .disabled(isConnecting)
         }
     }
 
@@ -162,16 +123,72 @@ struct SettingsView: View {
                 .lineLimit(2)
         }
 
-        Button("Edit Connection") {
-            beginEditing(prefill: true)
+        Button("Edit Connection…") {
+            openConnectionSheet(prefill: true)
         }
     }
 
+    private var connectionSheet: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField(
+                        "Server URL",
+                        text: $draftBaseURL,
+                        prompt: Text("https://example.com")
+                    )
+                    .textContentType(.URL)
+                    .autocorrectionDisabled()
+
+                    TextField(
+                        "Device ID",
+                        text: $draftDeviceID,
+                        prompt: Text("AA:BB:CC:DD:EE:FF")
+                    )
+                    .autocorrectionDisabled()
+
+                    SecureField(
+                        "Access Token",
+                        text: $draftAccessToken
+                    )
+                } footer: {
+                    Text("Credentials are verified with the server before they are saved. Uses official TRMNL headers ID and Access-Token.")
+                }
+            }
+            .formStyle(.grouped)
+            .navigationTitle(settings.isConfigured ? "Edit Connection" : "Connect")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        isShowingConnectionSheet = false
+                        connectError = nil
+                    }
+                    .disabled(isConnecting)
+                }
+
+                ToolbarItem(placement: .confirmationAction) {
+                    if isConnecting {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Button(settings.isConfigured ? "Save" : "Connect") {
+                            Task { await connect() }
+                        }
+                        .keyboardShortcut(.defaultAction)
+                        .disabled(!draftLooksComplete)
+                    }
+                }
+            }
+        }
+        .frame(width: 420, height: 280)
+        .interactiveDismissDisabled(isConnecting)
+    }
+
     private var connectionFooter: String {
-        if showsEditor {
-            String(localized: "Credentials are verified with the server before they are saved. Uses official TRMNL headers ID and Access-Token.")
-        } else {
+        if settings.isConfigured {
             String(localized: "This Mac acts as one LaraPaper device. Edit the connection to change server details.")
+        } else {
+            String(localized: "Connect to a LaraPaper server to use this Mac as a display device.")
         }
     }
 
@@ -201,18 +218,18 @@ struct SettingsView: View {
         "\(Int((settings.windowOpacity * 100).rounded()))%"
     }
 
-    private func beginEditing(prefill: Bool) {
+    private func openConnectionSheet(prefill: Bool) {
         if prefill {
             draftBaseURL = settings.baseURLString
             draftDeviceID = settings.deviceID
             draftAccessToken = settings.accessToken
-        } else if !isEditing {
+        } else {
             draftBaseURL = ""
             draftDeviceID = ""
             draftAccessToken = ""
         }
-        isEditing = settings.isConfigured
         connectError = nil
+        isShowingConnectionSheet = true
     }
 
     private func connect() async {
@@ -250,7 +267,7 @@ struct SettingsView: View {
             return
         }
 
-        isEditing = false
+        isShowingConnectionSheet = false
         session.reloadConfiguration()
     }
 }
