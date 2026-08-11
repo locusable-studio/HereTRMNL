@@ -36,7 +36,7 @@ final class DisplaySession: ObservableObject {
         }
     }
 
-    func start(forceRestart: Bool = false) {
+    func start(forceRestart: Bool = false, initialDelaySeconds: Int? = nil) {
         if pollTask != nil, !forceRestart {
             return
         }
@@ -47,7 +47,7 @@ final class DisplaySession: ObservableObject {
             phase = .loading
         }
         pollTask = Task { [weak self] in
-            await self?.runLoop(generation: generation)
+            await self?.runLoop(generation: generation, initialDelaySeconds: initialDelaySeconds)
         }
     }
 
@@ -79,7 +79,12 @@ final class DisplaySession: ObservableObject {
     func refresh(manual: Bool = false) async {
         let generation = self.generation
         do {
-            _ = try await enqueueFetch(forceImageReload: manual, generation: generation)
+            let seconds = try await enqueueFetch(forceImageReload: manual, generation: generation)
+            guard generation == self.generation else { return }
+            // Manual refresh resets the auto-refresh countdown from the new rate.
+            if manual {
+                start(forceRestart: true, initialDelaySeconds: seconds)
+            }
         } catch is CancellationError {
             return
         } catch {
@@ -87,7 +92,16 @@ final class DisplaySession: ObservableObject {
         }
     }
 
-    private func runLoop(generation: Int) async {
+    private func runLoop(generation: Int, initialDelaySeconds: Int? = nil) async {
+        if let delay = initialDelaySeconds {
+            nextRefreshAt = Date().addingTimeInterval(TimeInterval(delay))
+            do {
+                try await Task.sleep(for: .seconds(delay))
+            } catch {
+                return
+            }
+        }
+
         while !Task.isCancelled {
             guard generation == self.generation else { return }
 
