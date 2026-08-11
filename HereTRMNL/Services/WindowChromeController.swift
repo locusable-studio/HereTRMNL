@@ -42,12 +42,6 @@ final class WindowChromeController: ObservableObject {
         window.styleMask.insert(.fullSizeContentView)
         window.isMovableByWindowBackground = true
         window.backgroundColor = .black
-
-        var behavior = window.collectionBehavior
-        behavior.remove(.fullScreenPrimary)
-        behavior.remove(.fullScreenAllowsTiling)
-        behavior.insert(.fullScreenNone)
-        window.collectionBehavior = behavior
     }
 
     private func applyPin() {
