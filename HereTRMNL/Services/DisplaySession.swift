@@ -56,6 +56,34 @@ final class DisplaySession: ObservableObject {
         start(forceRestart: true)
     }
 
+    /// Clears display state after credentials are removed.
+    func disconnect() {
+        pollTask?.cancel()
+        pollTask = nil
+        fetchTail?.cancel()
+        fetchTail = nil
+        generation += 1
+        refreshDepth = 0
+        isRefreshing = false
+        lastChangeToken = nil
+        image = nil
+        filename = nil
+        lastUpdated = nil
+        nextRefreshAt = nil
+        lastRefreshRateSeconds = nil
+        phase = .failed(DisplayAPIError.notConfigured.localizedDescription)
+        start(forceRestart: true)
+    }
+
+    /// Verifies credentials against `/api/display` without mutating session state.
+    func verifyConnection(baseURL: URL, deviceID: String, accessToken: String) async throws {
+        _ = try await client.fetchDisplay(
+            baseURL: baseURL,
+            deviceID: deviceID,
+            accessToken: accessToken
+        )
+    }
+
     func refresh(manual: Bool = false) async {
         let generation = self.generation
         do {

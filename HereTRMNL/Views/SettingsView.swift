@@ -3,44 +3,30 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var session: DisplaySession
     @EnvironmentObject private var settings: AppSettings
-    @State private var saveError: String?
+
+    @State private var isEditing = false
+    @State private var draftBaseURL = ""
+    @State private var draftDeviceID = ""
+    @State private var draftAccessToken = ""
+    @State private var isConnecting = false
+    @State private var connectError: String?
+
+    private var showsEditor: Bool {
+        !settings.isConfigured || isEditing
+    }
 
     var body: some View {
         Form {
             Section {
-                TextField(
-                    "Server URL",
-                    text: $settings.baseURLString,
-                    prompt: Text("https://example.com")
-                )
-                .textContentType(.URL)
-                .autocorrectionDisabled()
-
-                TextField(
-                    "Device ID",
-                    text: $settings.deviceID,
-                    prompt: Text("AA:BB:CC:DD:EE:FF")
-                )
-                .autocorrectionDisabled()
-
-                SecureField(
-                    "Access Token",
-                    text: $settings.accessToken
-                )
-
-                LabeledContent("Status") {
-                    Text(settings.isConfigured ? "Ready" : "Incomplete")
-                        .foregroundStyle(.secondary)
+                if showsEditor {
+                    connectionEditor
+                } else {
+                    connectionSummary
                 }
-
-                Button("Connect") {
-                    connect()
-                }
-                .keyboardShortcut(.defaultAction)
             } header: {
                 Text("Connection")
             } footer: {
-                Text("Uses official TRMNL headers ID and Access-Token. Enter only the LaraPaper base URL. Credentials are saved when you connect.")
+                Text(connectionFooter)
             }
 
             Section {
@@ -77,13 +63,14 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .frame(width: 320)
-        .alert("Could Not Save", isPresented: Binding(
-            get: { saveError != nil },
-            set: { if !$0 { saveError = nil } }
+        .disabled(isConnecting)
+        .alert("Could Not Connect", isPresented: Binding(
+            get: { connectError != nil },
+            set: { if !$0 { connectError = nil } }
         )) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text(saveError ?? "")
+            Text(connectError ?? "")
         }
         .alert("Launch at Login", isPresented: Binding(
             get: { settings.launchAtLoginError != nil },
@@ -95,18 +82,188 @@ struct SettingsView: View {
         }
         .onAppear {
             settings.refreshLaunchAtLoginStatus()
+            if !settings.isConfigured {
+                beginEditing(prefill: false)
+            }
         }
+    }
+
+    @ViewBuilder
+    private var connectionEditor: some View {
+        TextField(
+            "Server URL",
+            text: $draftBaseURL,
+            prompt: Text("https://example.com")
+        )
+        .textContentType(.URL)
+        .autocorrectionDisabled()
+
+        TextField(
+            "Device ID",
+            text: $draftDeviceID,
+            prompt: Text("AA:BB:CC:DD:EE:FF")
+        )
+        .autocorrectionDisabled()
+
+        SecureField(
+            "Access Token",
+            text: $draftAccessToken
+        )
+
+        Button {
+            Task { await connect() }
+        } label: {
+            if isConnecting {
+                ProgressView()
+                    .controlSize(.small)
+                    .frame(maxWidth: .infinity)
+            } else {
+                Text(settings.isConfigured ? "Save Connection" : "Connect")
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .keyboardShortcut(.defaultAction)
+        .disabled(isConnecting || !draftLooksComplete)
+
+        if isEditing, settings.isConfigured {
+            Button("Cancel", role: .cancel) {
+                isEditing = false
+                connectError = nil
+            }
+            .disabled(isConnecting)
+        }
+    }
+
+    @ViewBuilder
+    private var connectionSummary: some View {
+        LabeledContent("Server") {
+            Text(settings.serverDisplayName)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .truncationMode(.middle)
+        }
+
+        LabeledContent("Device ID") {
+            Text(settings.deviceID)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .monospaced()
+        }
+
+        LabeledContent("Access Token") {
+            Text("••••••••")
+                .foregroundStyle(.secondary)
+        }
+
+        LabeledContent("Status") {
+            Text(connectionStatusText)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+        }
+
+        Button("Edit Connection") {
+            beginEditing(prefill: true)
+        }
+
+        Button("Disconnect", role: .destructive) {
+            disconnect()
+        }
+    }
+
+    private var connectionFooter: String {
+        if showsEditor {
+            String(localized: "Credentials are verified with the server before they are saved. Uses official TRMNL headers ID and Access-Token.")
+        } else {
+            String(localized: "This Mac acts as one LaraPaper device. Disconnect to remove saved credentials.")
+        }
+    }
+
+    private var connectionStatusText: String {
+        if session.isRefreshing {
+            return String(localized: "Updating…")
+        }
+        switch session.phase {
+        case .ready:
+            return String(localized: "Connected")
+        case .loading:
+            return String(localized: "Connecting…")
+        case .failed(let message):
+            return message
+        case .idle:
+            return String(localized: "Idle")
+        }
+    }
+
+    private var draftLooksComplete: Bool {
+        AppSettings.url(from: draftBaseURL) != nil
+            && !draftDeviceID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !draftAccessToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     private var opacityLabel: String {
         "\(Int((settings.windowOpacity * 100).rounded()))%"
     }
 
-    private func connect() {
-        guard settings.commit() else {
-            saveError = settings.lastKeychainError ?? String(localized: "Unknown Keychain error.")
+    private func beginEditing(prefill: Bool) {
+        if prefill {
+            draftBaseURL = settings.baseURLString
+            draftDeviceID = settings.deviceID
+            draftAccessToken = settings.accessToken
+        } else if !isEditing {
+            draftBaseURL = ""
+            draftDeviceID = ""
+            draftAccessToken = ""
+        }
+        isEditing = settings.isConfigured
+        connectError = nil
+    }
+
+    private func connect() async {
+        connectError = nil
+        isConnecting = true
+        defer { isConnecting = false }
+
+        let trimmedURL = draftBaseURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedID = draftDeviceID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedToken = draftAccessToken.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard let baseURL = AppSettings.url(from: trimmedURL) else {
+            connectError = String(localized: "Server URL is invalid.")
             return
         }
+
+        do {
+            try await session.verifyConnection(
+                baseURL: baseURL,
+                deviceID: trimmedID,
+                accessToken: trimmedToken
+            )
+        } catch {
+            connectError = error.localizedDescription
+            return
+        }
+
+        guard settings.applyCredentials(
+            baseURLString: trimmedURL,
+            deviceID: trimmedID,
+            accessToken: trimmedToken
+        ) else {
+            connectError = settings.lastKeychainError
+                ?? String(localized: "Unknown Keychain error.")
+            return
+        }
+
+        isEditing = false
         session.reloadConfiguration()
+    }
+
+    private func disconnect() {
+        settings.clearCredentials()
+        isEditing = false
+        draftBaseURL = ""
+        draftDeviceID = ""
+        draftAccessToken = ""
+        session.disconnect()
     }
 }

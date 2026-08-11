@@ -15,10 +15,12 @@ final class AppSettings: ObservableObject {
         static let hideToolbarInFullScreen = "hideToolbarInFullScreen"
     }
 
-    @Published var baseURLString: String
-    @Published var deviceID: String
-    /// In-memory until `commit()` persists it to the Keychain.
-    @Published var accessToken: String
+    /// Committed server base URL string (persisted).
+    @Published private(set) var baseURLString: String
+    /// Committed device ID (persisted).
+    @Published private(set) var deviceID: String
+    /// Committed access token (Keychain).
+    @Published private(set) var accessToken: String
     @Published private(set) var lastKeychainError: String?
 
     @Published var displayTone: DisplayTone {
@@ -55,6 +57,15 @@ final class AppSettings: ObservableObject {
         return !id.isEmpty && !token.isEmpty
     }
 
+    /// Host (or full URL string) for summary rows.
+    var serverDisplayName: String {
+        if let host = baseURL?.host, !host.isEmpty {
+            return host
+        }
+        let trimmed = baseURLString.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "—" : trimmed
+    }
+
     var lastDeviceContentSize: CGSize? {
         let width = UserDefaults.standard.double(forKey: Keys.lastContentWidth)
         let height = UserDefaults.standard.double(forKey: Keys.lastContentHeight)
@@ -84,28 +95,43 @@ final class AppSettings: ObservableObject {
         launchAtLoginEnabled = LaunchAtLogin.isEnabled
     }
 
+    /// Persist credentials after a successful live server check.
     @discardableResult
-    func commit() -> Bool {
+    func applyCredentials(baseURLString: String, deviceID: String, accessToken: String) -> Bool {
         lastKeychainError = nil
 
-        baseURLString = baseURLString.trimmingCharacters(in: .whitespacesAndNewlines)
-        deviceID = deviceID.trimmingCharacters(in: .whitespacesAndNewlines)
-        accessToken = accessToken.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        UserDefaults.standard.set(baseURLString, forKey: Keys.baseURL)
-        UserDefaults.standard.set(deviceID, forKey: Keys.deviceID)
+        let url = baseURLString.trimmingCharacters(in: .whitespacesAndNewlines)
+        let id = deviceID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let token = accessToken.trimmingCharacters(in: .whitespacesAndNewlines)
 
         do {
-            if accessToken.isEmpty {
+            if token.isEmpty {
                 try KeychainStore.deleteAccessToken()
             } else {
-                try KeychainStore.saveAccessToken(accessToken)
+                try KeychainStore.saveAccessToken(token)
             }
-            return true
         } catch {
             lastKeychainError = error.localizedDescription
             return false
         }
+
+        UserDefaults.standard.set(url, forKey: Keys.baseURL)
+        UserDefaults.standard.set(id, forKey: Keys.deviceID)
+        self.baseURLString = url
+        self.deviceID = id
+        self.accessToken = token
+        return true
+    }
+
+    /// Remove saved server credentials and stop using them.
+    func clearCredentials() {
+        lastKeychainError = nil
+        UserDefaults.standard.removeObject(forKey: Keys.baseURL)
+        UserDefaults.standard.removeObject(forKey: Keys.deviceID)
+        try? KeychainStore.deleteAccessToken()
+        baseURLString = ""
+        deviceID = ""
+        accessToken = ""
     }
 
     func setLaunchAtLogin(_ enabled: Bool) {
