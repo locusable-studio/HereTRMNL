@@ -136,6 +136,7 @@ final class WindowChromeController: ObservableObject {
         window.titlebarSeparatorStyle = .none
         window.styleMask.insert(.fullSizeContentView)
         window.isMovableByWindowBackground = true
+        hideTrafficLights()
         applyBackdrop()
     }
 
@@ -151,14 +152,18 @@ final class WindowChromeController: ObservableObject {
         window?.alphaValue = CGFloat(opacity)
     }
 
-    /// Hide traffic lights + toolbar when the window is not key; also honor fullscreen toolbar pref.
+    private func hideTrafficLights() {
+        guard let window else { return }
+        for buttonType: NSWindow.ButtonType in [.closeButton, .miniaturizeButton, .zoomButton] {
+            window.standardWindowButton(buttonType)?.isHidden = true
+        }
+    }
+
+    /// Hide toolbar when the window is not key; also honor fullscreen toolbar pref.
     private func applyChromeVisibility() {
         guard let window else { return }
 
-        let showTrafficLights = isKeyWindow
-        for buttonType: NSWindow.ButtonType in [.closeButton, .miniaturizeButton, .zoomButton] {
-            window.standardWindowButton(buttonType)?.isHidden = !showTrafficLights
-        }
+        hideTrafficLights()
 
         let hideToolbar = !isKeyWindow || (hideToolbarInFullScreen && isFullScreen)
         let toolbarVisible = !hideToolbar

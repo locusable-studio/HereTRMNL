@@ -29,6 +29,10 @@ struct HereTRMNLApp: App {
     }
 
     var body: some Scene {
+        MenuBarExtra("HereTRMNL", systemImage: "photo.on.rectangle") {
+            StatusMenuView()
+        }
+
         Window("HereTRMNL", id: "display") {
             DisplayView()
                 .environmentObject(displaySession)
@@ -47,6 +51,7 @@ struct HereTRMNLApp: App {
         )
         .commands {
             CommandGroup(replacing: .newItem) {}
+            CommandGroup(replacing: .appTermination) {}
             CommandGroup(after: .toolbar) {
                 Button("Refresh Now") {
                     Task { await displaySession.refresh(manual: true) }
@@ -63,6 +68,13 @@ struct HereTRMNLApp: App {
                     windowChrome.restoreStandardSize()
                 }
                 .keyboardShortcut("0", modifiers: [.command])
+            }
+
+            CommandMenu("Options") {
+                Button("Quit HereTRMNL") {
+                    NSApplication.shared.terminate(nil)
+                }
+                .keyboardShortcut("q", modifiers: [.command])
             }
         }
 

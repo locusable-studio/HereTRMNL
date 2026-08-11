@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		07EE3F1B1C302BD911B5B7C7 /* WindowChromeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14565D69B43E54405B0C8BB1 /* WindowChromeController.swift */; };
 		212B3EE79671BF95588DD8C2 /* DisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D42556259C6D6B02C175E0FB /* DisplayView.swift */; };
+		31218B8B00989BF3B732675F /* StatusMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EF50E91D75CF2E407F73685 /* StatusMenuView.swift */; };
 		3C84E527DC3E063B714E80CA /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B04FCBB63267A7C5BA076A0 /* SettingsView.swift */; };
 		42B47CD3F038F71984D7408F /* DisplayResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D9DCB9F08AE1FB8A1E3932 /* DisplayResponse.swift */; };
 		4F8E544A39EBC495EAA60730 /* DisplayTone.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813C3F730CF347600056A501 /* DisplayTone.swift */; };
@@ -43,6 +44,7 @@
 		1B04FCBB63267A7C5BA076A0 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3E25C162C1001E54F46ED7B1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		47BA6D3B09C5BE91D09D6F70 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		4EF50E91D75CF2E407F73685 /* StatusMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMenuView.swift; sourceTree = "<group>"; };
 		6088F61218533A8ACDD25922 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		67CBB733952CE3D2A626EEC6 /* HereTRMNLTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HereTRMNLTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F118A317A9B739C09F26E8A /* DisplayAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayAPIClient.swift; sourceTree = "<group>"; };
@@ -106,6 +108,7 @@
 			children = (
 				D42556259C6D6B02C175E0FB /* DisplayView.swift */,
 				1B04FCBB63267A7C5BA076A0 /* SettingsView.swift */,
+				4EF50E91D75CF2E407F73685 /* StatusMenuView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -243,6 +246,7 @@
 				BA23DBAC5C6E4DDB1D08B63D /* LaunchAtLogin.swift in Sources */,
 				3C84E527DC3E063B714E80CA /* SettingsView.swift in Sources */,
 				80411ECF2CD6ABA7F3D3767A /* SingleInstanceGuard.swift in Sources */,
+				31218B8B00989BF3B732675F /* StatusMenuView.swift in Sources */,
 				07EE3F1B1C302BD911B5B7C7 /* WindowChromeController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -270,6 +274,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = HereTRMNL;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSMultipleInstancesProhibited = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -380,6 +385,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = HereTRMNL;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSMultipleInstancesProhibited = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
