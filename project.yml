@@ -34,3 +34,28 @@ targets:
       properties:
         com.apple.security.app-sandbox: true
         com.apple.security.network.client: true
+  HereTRMNLTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: HereTRMNLTests
+    dependencies:
+      - target: HereTRMNL
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.locusable.heretrmnl.tests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_STRICT_CONCURRENCY: complete
+
+schemes:
+  HereTRMNL:
+    build:
+      targets:
+        HereTRMNL: all
+        HereTRMNLTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - HereTRMNLTests

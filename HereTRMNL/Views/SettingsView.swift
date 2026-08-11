@@ -2,7 +2,8 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject private var session: DisplaySession
-    @ObservedObject private var settings = AppSettings.shared
+    @EnvironmentObject private var settings: AppSettings
+    @State private var saveError: String?
 
     var body: some View {
         Form {
@@ -28,12 +29,12 @@ struct SettingsView: View {
             } header: {
                 Text("Connection")
             } footer: {
-                Text("Uses the official TRMNL headers ID and Access-Token. Enter only the LaraPaper base URL.")
+                Text("Uses the official TRMNL headers ID and Access-Token. Enter only the LaraPaper base URL. Credentials are saved when you connect.")
             }
 
             Section {
                 Button("Connect") {
-                    session.reloadConfiguration()
+                    connect()
                 }
                 .keyboardShortcut(.defaultAction)
 
@@ -44,5 +45,21 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .frame(width: 420)
+        .alert("Could Not Save", isPresented: Binding(
+            get: { saveError != nil },
+            set: { if !$0 { saveError = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(saveError ?? "")
+        }
+    }
+
+    private func connect() {
+        guard settings.commit() else {
+            saveError = settings.lastKeychainError ?? "Unknown Keychain error."
+            return
+        }
+        session.reloadConfiguration()
     }
 }

@@ -16,63 +16,92 @@ final class DisplaySession: ObservableObject {
     @Published private(set) var lastUpdated: Date?
     @Published private(set) var nextRefreshAt: Date?
     @Published private(set) var lastRefreshRateSeconds: Int?
+    @Published private(set) var deviceContentSize: CGSize?
 
-    private let settings = AppSettings.shared
-    private let client = DisplayAPIClient()
+    private let settings: AppSettings
+    private let client: DisplayAPIClient
     private var pollTask: Task<Void, Never>?
+    private var fetchTail: Task<Int, Error>?
+    private var generation = 0
     private var lastChangeToken: String?
 
-    init() {
-        start()
+    init(settings: AppSettings = .shared, client: DisplayAPIClient = DisplayAPIClient()) {
+        self.settings = settings
+        self.client = client
+        if let saved = settings.lastDeviceContentSize {
+            deviceContentSize = saved
+        }
     }
 
-    func start() {
+    func start(forceRestart: Bool = false) {
+        if pollTask != nil, !forceRestart {
+            return
+        }
         pollTask?.cancel()
+        generation += 1
+        let generation = self.generation
         pollTask = Task { [weak self] in
-            await self?.runLoop()
+            await self?.runLoop(generation: generation)
         }
     }
 
     func reloadConfiguration() {
         lastChangeToken = nil
-        start()
+        start(forceRestart: true)
     }
 
     func refresh(manual: Bool = false) async {
+        let generation = self.generation
         do {
-            try await fetchAndApply(forceImageReload: manual)
+            _ = try await enqueueFetch(forceImageReload: manual, generation: generation)
         } catch is CancellationError {
             return
         } catch {
-            phase = .failed(error.localizedDescription)
+            applyFailure(error, generation: generation)
         }
     }
 
-    private func runLoop() async {
+    private func runLoop(generation: Int) async {
         while !Task.isCancelled {
+            guard generation == self.generation else { return }
+
             guard settings.isConfigured else {
-                phase = .failed(DisplayAPIError.notConfigured.localizedDescription)
-                image = nil
+                applyFailure(DisplayAPIError.notConfigured, generation: generation)
                 try? await Task.sleep(for: .seconds(2))
                 continue
             }
 
             do {
-                let seconds = try await fetchAndApply(forceImageReload: false)
+                let seconds = try await enqueueFetch(forceImageReload: false, generation: generation)
+                guard generation == self.generation else { return }
                 nextRefreshAt = Date().addingTimeInterval(TimeInterval(seconds))
                 try await Task.sleep(for: .seconds(seconds))
             } catch is CancellationError {
                 return
             } catch {
-                phase = .failed(error.localizedDescription)
+                applyFailure(error, generation: generation)
+                guard generation == self.generation else { return }
                 nextRefreshAt = Date().addingTimeInterval(30)
                 try? await Task.sleep(for: .seconds(30))
             }
         }
     }
 
+    /// Serializes network work so poll + manual refresh never overlap.
+    private func enqueueFetch(forceImageReload: Bool, generation: Int) async throws -> Int {
+        let previous = fetchTail
+        let task = Task<Int, Error> { @MainActor in
+            _ = await previous?.result
+            guard generation == self.generation else { throw CancellationError() }
+            return try await self.fetchAndApply(forceImageReload: forceImageReload, generation: generation)
+        }
+        fetchTail = task
+        return try await task.value
+    }
+
     @discardableResult
-    private func fetchAndApply(forceImageReload: Bool) async throws -> Int {
+    private func fetchAndApply(forceImageReload: Bool, generation: Int) async throws -> Int {
+        guard generation == self.generation else { throw CancellationError() }
         guard let baseURL = settings.baseURL else {
             throw DisplayAPIError.invalidBaseURL
         }
@@ -92,8 +121,10 @@ final class DisplaySession: ObservableObject {
             deviceID: deviceID,
             accessToken: accessToken
         )
+        try Task.checkCancellation()
+        guard generation == self.generation else { throw CancellationError() }
 
-        guard let imageURL = response.imageURL else {
+        guard let imageURL = response.resolvingImageURL(relativeTo: baseURL) else {
             throw DisplayAPIError.invalidResponse
         }
 
@@ -101,12 +132,20 @@ final class DisplaySession: ObservableObject {
         let shouldReloadImage = forceImageReload || token == nil || token != lastChangeToken || image == nil
         if shouldReloadImage {
             let data = try await client.downloadImage(from: imageURL)
+            try Task.checkCancellation()
+            guard generation == self.generation else { throw CancellationError() }
             guard let nsImage = NSImage(data: data) else {
                 throw DisplayAPIError.invalidResponse
             }
             image = nsImage
             lastChangeToken = token
+
+            let pixelSize = nsImage.devicePixelSize
+            deviceContentSize = pixelSize
+            settings.rememberDeviceContentSize(pixelSize)
         }
+
+        guard generation == self.generation else { throw CancellationError() }
 
         filename = token
         lastUpdated = Date()
@@ -114,5 +153,12 @@ final class DisplaySession: ObservableObject {
         lastRefreshRateSeconds = seconds
         phase = .ready
         return seconds
+    }
+
+    private func applyFailure(_ error: Error, generation: Int) {
+        guard generation == self.generation else { return }
+        image = nil
+        lastChangeToken = nil
+        phase = .failed(error.localizedDescription)
     }
 }

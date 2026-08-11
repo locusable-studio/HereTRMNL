@@ -11,13 +11,25 @@
 		212B3EE79671BF95588DD8C2 /* DisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D42556259C6D6B02C175E0FB /* DisplayView.swift */; };
 		3C84E527DC3E063B714E80CA /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B04FCBB63267A7C5BA076A0 /* SettingsView.swift */; };
 		42B47CD3F038F71984D7408F /* DisplayResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D9DCB9F08AE1FB8A1E3932 /* DisplayResponse.swift */; };
+		80901AE3E861E8A53AFF6A49 /* AppRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6DC945C61452A0EBC6B69FB /* AppRuntime.swift */; };
 		8526A0092E8CD2DCBEF26503 /* DisplayAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F118A317A9B739C09F26E8A /* DisplayAPIClient.swift */; };
 		9F1D0E83C78B5C3D662D9EE1 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47BA6D3B09C5BE91D09D6F70 /* AppSettings.swift */; };
 		B03DD44EE11F72E4A5FCD562 /* HereTRMNLApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F1504826D349931DEA817B4 /* HereTRMNLApp.swift */; };
 		B9E113B9EB4455F103CEDBC7 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBC721454DE4A3A472993997 /* KeychainStore.swift */; };
+		EB1AE06980436C6DF64ADCC5 /* DisplayResponseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B23058AFB8FFB76567DA54 /* DisplayResponseTests.swift */; };
 		EDFD6B5AA5D036393F2F0C8F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3E25C162C1001E54F46ED7B1 /* Assets.xcassets */; };
 		EF40F26788F3030DF55E868A /* DisplaySession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDB4BE2BE2DE9E726C217BE4 /* DisplaySession.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4447EB0D8804A2DBBAED3E25 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C73794C1655D243D791E1BC4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 896BAA6BD5CE7223D2FACC95;
+			remoteInfo = HereTRMNL;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		04D9DCB9F08AE1FB8A1E3932 /* DisplayResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayResponse.swift; sourceTree = "<group>"; };
@@ -25,12 +37,15 @@
 		1B04FCBB63267A7C5BA076A0 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3E25C162C1001E54F46ED7B1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		47BA6D3B09C5BE91D09D6F70 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		67CBB733952CE3D2A626EEC6 /* HereTRMNLTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HereTRMNLTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F118A317A9B739C09F26E8A /* DisplayAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayAPIClient.swift; sourceTree = "<group>"; };
 		9E9303745E983739020F5AC1 /* HereTRMNL.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HereTRMNL.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9F1504826D349931DEA817B4 /* HereTRMNLApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HereTRMNLApp.swift; sourceTree = "<group>"; };
+		A6B23058AFB8FFB76567DA54 /* DisplayResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayResponseTests.swift; sourceTree = "<group>"; };
 		CDB4BE2BE2DE9E726C217BE4 /* DisplaySession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplaySession.swift; sourceTree = "<group>"; };
 		D42556259C6D6B02C175E0FB /* DisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayView.swift; sourceTree = "<group>"; };
 		EBC721454DE4A3A472993997 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		F6DC945C61452A0EBC6B69FB /* AppRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRuntime.swift; sourceTree = "<group>"; };
 		FC2F7A6230F27E44ADB6D5B8 /* HereTRMNL.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HereTRMNL.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -39,6 +54,7 @@
 			isa = PBXGroup;
 			children = (
 				9E9303745E983739020F5AC1 /* HereTRMNL.app */,
+				67CBB733952CE3D2A626EEC6 /* HereTRMNLTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -47,6 +63,7 @@
 			isa = PBXGroup;
 			children = (
 				D73E7CADA36EE5B919730A95 /* HereTRMNL */,
+				974BF9D8B02201258EEDF2DC /* HereTRMNLTests */,
 				4E3BB94DF04BFD9EAEE6715E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,6 +71,7 @@
 		7A60CFE76DA31307F7BAF7C4 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				F6DC945C61452A0EBC6B69FB /* AppRuntime.swift */,
 				47BA6D3B09C5BE91D09D6F70 /* AppSettings.swift */,
 				7F118A317A9B739C09F26E8A /* DisplayAPIClient.swift */,
 				CDB4BE2BE2DE9E726C217BE4 /* DisplaySession.swift */,
@@ -61,6 +79,14 @@
 				14565D69B43E54405B0C8BB1 /* WindowChromeController.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		974BF9D8B02201258EEDF2DC /* HereTRMNLTests */ = {
+			isa = PBXGroup;
+			children = (
+				A6B23058AFB8FFB76567DA54 /* DisplayResponseTests.swift */,
+			);
+			path = HereTRMNLTests;
 			sourceTree = "<group>";
 		};
 		C48CE7D2966DE2140477A939 /* Views */ = {
@@ -96,6 +122,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		356732D3BC0A6BDC5E9F802B /* HereTRMNLTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A392B8CE88A860E12B41C238 /* Build configuration list for PBXNativeTarget "HereTRMNLTests" */;
+			buildPhases = (
+				A283772A50B198D82F4AB67D /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				017C97128F0321884B5E6260 /* PBXTargetDependency */,
+			);
+			name = HereTRMNLTests;
+			packageProductDependencies = (
+			);
+			productName = HereTRMNLTests;
+			productReference = 67CBB733952CE3D2A626EEC6 /* HereTRMNLTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		896BAA6BD5CE7223D2FACC95 /* HereTRMNL */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8B2180722B63541D922E0C37 /* Build configuration list for PBXNativeTarget "HereTRMNL" */;
@@ -140,6 +184,7 @@
 			projectRoot = "";
 			targets = (
 				896BAA6BD5CE7223D2FACC95 /* HereTRMNL */,
+				356732D3BC0A6BDC5E9F802B /* HereTRMNLTests */,
 			);
 		};
 /* End PBXProject section */
@@ -156,10 +201,19 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		A283772A50B198D82F4AB67D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB1AE06980436C6DF64ADCC5 /* DisplayResponseTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B78896932F2308B9BB7579EC /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				80901AE3E861E8A53AFF6A49 /* AppRuntime.swift in Sources */,
 				9F1D0E83C78B5C3D662D9EE1 /* AppSettings.swift in Sources */,
 				8526A0092E8CD2DCBEF26503 /* DisplayAPIClient.swift in Sources */,
 				42B47CD3F038F71984D7408F /* DisplayResponse.swift in Sources */,
@@ -173,6 +227,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		017C97128F0321884B5E6260 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 896BAA6BD5CE7223D2FACC95 /* HereTRMNL */;
+			targetProxy = 4447EB0D8804A2DBBAED3E25 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		104FBDF4C9C9BAE201340601 /* Release */ = {
@@ -263,6 +325,24 @@
 			};
 			name = Debug;
 		};
+		2650E2B3CD23F54FE2CD74B4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.locusable.heretrmnl.tests;
+				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HereTRMNL.app/Contents/MacOS/HereTRMNL";
+			};
+			name = Release;
+		};
 		80954DB88D1E77B7F5922E3F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -285,6 +365,24 @@
 				PRODUCT_NAME = HereTRMNL;
 				SDKROOT = macosx;
 				SWIFT_STRICT_CONCURRENCY = complete;
+			};
+			name = Debug;
+		};
+		B9058F9F63FF97CF3280DB9E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.locusable.heretrmnl.tests;
+				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HereTRMNL.app/Contents/MacOS/HereTRMNL";
 			};
 			name = Debug;
 		};
@@ -361,6 +459,15 @@
 			buildConfigurations = (
 				80954DB88D1E77B7F5922E3F /* Debug */,
 				104FBDF4C9C9BAE201340601 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A392B8CE88A860E12B41C238 /* Build configuration list for PBXNativeTarget "HereTRMNLTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B9058F9F63FF97CF3280DB9E /* Debug */,
+				2650E2B3CD23F54FE2CD74B4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

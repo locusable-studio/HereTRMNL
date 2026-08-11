@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Field types differ across servers: TRMNL often sends `refresh_rate` as a string,
 /// while LaraPaper sends an integer.
-struct DisplayResponse: Decodable, Sendable {
+struct DisplayResponse: Decodable, Sendable, Equatable {
     var status: Int?
     var imageURL: URL?
     var filename: String?
@@ -21,6 +21,22 @@ struct DisplayResponse: Decodable, Sendable {
         case error
     }
 
+    init(
+        status: Int? = nil,
+        imageURL: URL? = nil,
+        filename: String? = nil,
+        imageName: String? = nil,
+        refreshRate: Int? = nil,
+        error: String? = nil
+    ) {
+        self.status = status
+        self.imageURL = imageURL
+        self.filename = filename
+        self.imageName = imageName
+        self.refreshRate = refreshRate
+        self.error = error
+    }
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         status = Self.decodeFlexibleInt(from: container, forKey: .status)
@@ -30,7 +46,7 @@ struct DisplayResponse: Decodable, Sendable {
         error = try container.decodeIfPresent(String.self, forKey: .error)
 
         if let urlString = try container.decodeIfPresent(String.self, forKey: .imageURL) {
-            imageURL = Self.normalizedImageURL(from: urlString)
+            imageURL = URL(string: urlString)
         } else {
             imageURL = nil
         }
@@ -49,6 +65,19 @@ struct DisplayResponse: Decodable, Sendable {
         return code == 0 || code == 200
     }
 
+    /// Upgrade `http` image URLs only when the API base itself is HTTPS.
+    func resolvingImageURL(relativeTo apiBaseURL: URL) -> URL? {
+        guard let imageURL else { return nil }
+        guard var components = URLComponents(url: imageURL, resolvingAgainstBaseURL: false) else {
+            return imageURL
+        }
+        if components.scheme?.lowercased() == "http",
+           apiBaseURL.scheme?.lowercased() == "https" {
+            components.scheme = "https"
+        }
+        return components.url ?? imageURL
+    }
+
     private static func decodeFlexibleInt(
         from container: KeyedDecodingContainer<CodingKeys>,
         forKey key: CodingKeys
@@ -60,16 +89,5 @@ struct DisplayResponse: Decodable, Sendable {
             return Int(value.trimmingCharacters(in: .whitespacesAndNewlines))
         }
         return nil
-    }
-
-    /// LaraPaper may emit `http://` image URLs even when the API is reached over HTTPS.
-    private static func normalizedImageURL(from raw: String) -> URL? {
-        guard var components = URLComponents(string: raw) else {
-            return URL(string: raw)
-        }
-        if components.scheme?.lowercased() == "http" {
-            components.scheme = "https"
-        }
-        return components.url ?? URL(string: raw)
     }
 }

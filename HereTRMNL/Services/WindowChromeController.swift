@@ -3,20 +3,33 @@ import SwiftUI
 
 @MainActor
 final class WindowChromeController: ObservableObject {
-    /// TRMNL OG default; updated from the registered device's rendered screen.
+    /// TRMNL OG default; overridden by last remembered device size when available.
     static let defaultContentSize = NSSize(width: 800, height: 480)
 
     @Published var isPinned = false {
         didSet { applyPin() }
     }
 
-    @Published private(set) var contentSize = WindowChromeController.defaultContentSize
+    @Published private(set) var contentSize: NSSize
 
     private weak var window: NSWindow?
+    private var didAttach = false
+
+    init(initialContentSize: NSSize? = nil) {
+        if let initialContentSize, initialContentSize.width > 0, initialContentSize.height > 0 {
+            contentSize = initialContentSize
+        } else {
+            contentSize = Self.defaultContentSize
+        }
+    }
 
     func attach(to window: NSWindow) {
+        let isSameWindow = self.window === window
         self.window = window
-        applyChrome()
+        if !isSameWindow || !didAttach {
+            applyChrome()
+            didAttach = true
+        }
         applyPin()
         applyAspectRatio(resize: false)
     }
@@ -78,37 +91,35 @@ extension NSImage {
     }
 }
 
-/// Hooks the SwiftUI window so we can configure NSWindow chrome.
+/// Observes `viewDidMoveToWindow` so chrome is applied when the NSWindow actually exists.
 struct WindowChromeInstaller: NSViewRepresentable {
     @ObservedObject var controller: WindowChromeController
 
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView(frame: .zero)
-        DispatchQueue.main.async {
-            if let window = view.window {
-                controller.attach(to: window)
-            }
+    func makeNSView(context: Context) -> WindowAttachView {
+        let view = WindowAttachView()
+        view.onWindowChange = { [weak controller] window in
+            guard let controller, let window else { return }
+            controller.attach(to: window)
         }
         return view
     }
 
-    func updateNSView(_ nsView: NSView, context: Context) {
-        DispatchQueue.main.async {
-            guard let window = nsView.window else { return }
-            if controller !== context.coordinator.attachedController || window !== context.coordinator.attachedWindow {
-                context.coordinator.attachedController = controller
-                context.coordinator.attachedWindow = window
-                controller.attach(to: window)
-            }
+    func updateNSView(_ nsView: WindowAttachView, context: Context) {
+        nsView.onWindowChange = { [weak controller] window in
+            guard let controller, let window else { return }
+            controller.attach(to: window)
+        }
+        if let window = nsView.window {
+            controller.attach(to: window)
         }
     }
+}
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
+final class WindowAttachView: NSView {
+    var onWindowChange: ((NSWindow?) -> Void)?
 
-    final class Coordinator {
-        var attachedController: WindowChromeController?
-        weak var attachedWindow: NSWindow?
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        onWindowChange?(window)
     }
 }

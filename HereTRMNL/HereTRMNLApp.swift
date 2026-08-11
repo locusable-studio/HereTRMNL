@@ -1,21 +1,41 @@
+import AppKit
 import SwiftUI
 
 @main
 struct HereTRMNLApp: App {
-    @StateObject private var displaySession = DisplaySession()
-    @StateObject private var windowChrome = WindowChromeController()
+    @ObservedObject private var settings = AppSettings.shared
+    @StateObject private var displaySession: DisplaySession
+    @StateObject private var windowChrome: WindowChromeController
+
+    init() {
+        let settings = AppSettings.shared
+        _displaySession = StateObject(wrappedValue: DisplaySession(settings: settings))
+
+        let initialSize: NSSize
+        if let saved = settings.lastDeviceContentSize {
+            initialSize = NSSize(width: saved.width, height: saved.height)
+        } else {
+            initialSize = WindowChromeController.defaultContentSize
+        }
+        _windowChrome = StateObject(wrappedValue: WindowChromeController(initialContentSize: initialSize))
+    }
 
     var body: some Scene {
         Window("HereTRMNL", id: "display") {
             DisplayView()
                 .environmentObject(displaySession)
                 .environmentObject(windowChrome)
+                .environmentObject(settings)
+                .task {
+                    guard !AppRuntime.isRunningTests else { return }
+                    displaySession.start()
+                }
         }
         .windowStyle(.hiddenTitleBar)
         .windowToolbarStyle(.unified)
         .defaultSize(
-            width: WindowChromeController.defaultContentSize.width,
-            height: WindowChromeController.defaultContentSize.height
+            width: windowChrome.contentSize.width,
+            height: windowChrome.contentSize.height
         )
         .commands {
             CommandGroup(replacing: .newItem) {}
@@ -35,6 +55,7 @@ struct HereTRMNLApp: App {
         Settings {
             SettingsView()
                 .environmentObject(displaySession)
+                .environmentObject(settings)
         }
     }
 }

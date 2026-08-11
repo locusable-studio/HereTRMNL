@@ -1,12 +1,13 @@
 import Foundation
 
-enum DisplayAPIError: LocalizedError {
+enum DisplayAPIError: LocalizedError, Equatable {
     case notConfigured
     case invalidBaseURL
     case invalidResponse
     case decoding(String)
     case server(status: Int, message: String?)
     case http(statusCode: Int)
+    case keychain(String)
 
     var errorDescription: String? {
         switch self {
@@ -25,6 +26,8 @@ enum DisplayAPIError: LocalizedError {
             return "Server error \(status)."
         case .http(let statusCode):
             return "HTTP \(statusCode)."
+        case .keychain(let detail):
+            return "Could not save access token: \(detail)"
         }
     }
 }
@@ -50,6 +53,8 @@ struct DisplayAPIClient: Sendable {
         request.timeoutInterval = 60
 
         let (data, response) = try await session.data(for: request)
+        try Task.checkCancellation()
+
         guard let http = response as? HTTPURLResponse else {
             throw DisplayAPIError.invalidResponse
         }
@@ -66,7 +71,7 @@ struct DisplayAPIClient: Sendable {
         guard decoded.isSuccess else {
             throw DisplayAPIError.server(status: decoded.status ?? -1, message: decoded.error)
         }
-        guard decoded.imageURL != nil else {
+        guard decoded.resolvingImageURL(relativeTo: baseURL) != nil else {
             throw DisplayAPIError.invalidResponse
         }
         return decoded
@@ -74,6 +79,7 @@ struct DisplayAPIClient: Sendable {
 
     func downloadImage(from url: URL) async throws -> Data {
         let (data, response) = try await session.data(from: url)
+        try Task.checkCancellation()
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
             throw DisplayAPIError.invalidResponse
         }
