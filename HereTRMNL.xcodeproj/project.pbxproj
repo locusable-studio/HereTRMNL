@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		07EE3F1B1C302BD911B5B7C7 /* WindowChromeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14565D69B43E54405B0C8BB1 /* WindowChromeController.swift */; };
 		212B3EE79671BF95588DD8C2 /* DisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D42556259C6D6B02C175E0FB /* DisplayView.swift */; };
 		3C84E527DC3E063B714E80CA /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B04FCBB63267A7C5BA076A0 /* SettingsView.swift */; };
 		42B47CD3F038F71984D7408F /* DisplayResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D9DCB9F08AE1FB8A1E3932 /* DisplayResponse.swift */; };
@@ -20,6 +21,7 @@
 
 /* Begin PBXFileReference section */
 		04D9DCB9F08AE1FB8A1E3932 /* DisplayResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayResponse.swift; sourceTree = "<group>"; };
+		14565D69B43E54405B0C8BB1 /* WindowChromeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowChromeController.swift; sourceTree = "<group>"; };
 		1B04FCBB63267A7C5BA076A0 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3E25C162C1001E54F46ED7B1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		47BA6D3B09C5BE91D09D6F70 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
@@ -56,6 +58,7 @@
 				7F118A317A9B739C09F26E8A /* DisplayAPIClient.swift */,
 				CDB4BE2BE2DE9E726C217BE4 /* DisplaySession.swift */,
 				EBC721454DE4A3A472993997 /* KeychainStore.swift */,
+				14565D69B43E54405B0C8BB1 /* WindowChromeController.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -165,6 +168,7 @@
 				B03DD44EE11F72E4A5FCD562 /* HereTRMNLApp.swift in Sources */,
 				B9E113B9EB4455F103CEDBC7 /* KeychainStore.swift in Sources */,
 				3C84E527DC3E063B714E80CA /* SettingsView.swift in Sources */,
+				07EE3F1B1C302BD911B5B7C7 /* WindowChromeController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

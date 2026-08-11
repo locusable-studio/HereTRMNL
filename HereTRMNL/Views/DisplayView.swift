@@ -3,6 +3,7 @@ import SwiftUI
 
 struct DisplayView: View {
     @EnvironmentObject private var session: DisplaySession
+    @EnvironmentObject private var windowChrome: WindowChromeController
     @ObservedObject private var settings = AppSettings.shared
     @Environment(\.openSettings) private var openSettings
 
@@ -48,8 +49,33 @@ struct DisplayView: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(WindowChromeInstaller(controller: windowChrome))
+        .ignoresSafeArea()
+        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+        .onAppear {
+            if let image = session.image {
+                windowChrome.lockAspect(to: image)
+            } else {
+                windowChrome.lockAspect(to: WindowChromeController.defaultContentSize)
+            }
+        }
+        .onChange(of: session.image) { _, image in
+            if let image {
+                windowChrome.lockAspect(to: image)
+            }
+        }
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarSpacer(.flexible)
+
+            ToolbarItemGroup(placement: .confirmationAction) {
+                Button(
+                    windowChrome.isPinned ? "Unpin" : "Pin",
+                    systemImage: windowChrome.isPinned ? "pin.fill" : "pin"
+                ) {
+                    windowChrome.isPinned.toggle()
+                }
+
                 Button("Refresh", systemImage: "arrow.clockwise") {
                     Task { await session.refresh(manual: true) }
                 }
