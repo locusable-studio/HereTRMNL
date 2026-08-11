@@ -46,6 +46,14 @@ struct DisplayView: View {
                         openSettings()
                     }
                 }
+            } else if let image = session.image {
+                // Keep the last frame visible even when a later refresh fails.
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .modifier(DisplayToneModifier(invert: shouldInvertImage))
+                    .accessibilityLabel(session.filename ?? String(localized: "Display image"))
             } else if case .failed(let message) = session.phase {
                 ContentUnavailableView {
                     Label("Unable to Load Display", systemImage: "exclamationmark.triangle")
@@ -56,13 +64,6 @@ struct DisplayView: View {
                         Task { await session.refresh(manual: true) }
                     }
                 }
-            } else if let image = session.image {
-                Image(nsImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .modifier(DisplayToneModifier(invert: shouldInvertImage))
-                    .accessibilityLabel(session.filename ?? String(localized: "Display image"))
             } else if settings.isConfigured || session.phase == .loading {
                 ProgressView()
             } else {

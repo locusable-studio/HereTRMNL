@@ -53,6 +53,23 @@ struct DisplayResponseTests {
         #expect(response.resolvingImageURL(relativeTo: httpAPI)?.scheme == "http")
     }
 
+    @Test func resolvesRelativeImageURLAgainstAPIBase() throws {
+        let json = """
+        {
+          "status": 0,
+          "image_url": "/storage/a.png",
+          "filename": "a.png",
+          "refresh_rate": 300
+        }
+        """.data(using: .utf8)!
+
+        let response = try JSONDecoder().decode(DisplayResponse.self, from: json)
+        let api = URL(string: "https://trmnl.example")!
+        let resolved = response.resolvingImageURL(relativeTo: api)
+
+        #expect(resolved?.absoluteString == "https://trmnl.example/storage/a.png")
+    }
+
     @Test func treatsMissingStatusAsSuccess() throws {
         let json = """
         {

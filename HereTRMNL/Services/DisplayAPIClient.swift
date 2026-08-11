@@ -59,7 +59,7 @@ struct DisplayAPIClient: Sendable {
             throw DisplayAPIError.invalidResponse
         }
         guard (200..<300).contains(http.statusCode) else {
-            throw DisplayAPIError.http(statusCode: http.statusCode)
+            throw Self.mapHTTPFailure(statusCode: http.statusCode, data: data)
         }
 
         let decoded: DisplayResponse
@@ -84,5 +84,17 @@ struct DisplayAPIClient: Sendable {
             throw DisplayAPIError.invalidResponse
         }
         return data
+    }
+
+    private static func mapHTTPFailure(statusCode: Int, data: Data) -> DisplayAPIError {
+        if let decoded = try? JSONDecoder().decode(DisplayResponse.self, from: data) {
+            if let message = decoded.error, !message.isEmpty {
+                return .server(status: decoded.status ?? statusCode, message: message)
+            }
+            if let status = decoded.status, !decoded.isSuccess {
+                return .server(status: status, message: decoded.error)
+            }
+        }
+        return .http(statusCode: statusCode)
     }
 }

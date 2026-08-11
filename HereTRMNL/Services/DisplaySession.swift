@@ -51,8 +51,19 @@ final class DisplaySession: ObservableObject {
         }
     }
 
+    /// Clears the previous screen and restarts polling after credentials change.
     func reloadConfiguration() {
+        fetchTail?.cancel()
+        fetchTail = nil
         lastChangeToken = nil
+        image = nil
+        filename = nil
+        lastUpdated = nil
+        nextRefreshAt = nil
+        lastRefreshRateSeconds = nil
+        if settings.isConfigured {
+            phase = .loading
+        }
         start(forceRestart: true)
     }
 
@@ -81,7 +92,7 @@ final class DisplaySession: ObservableObject {
             guard generation == self.generation else { return }
 
             guard settings.isConfigured else {
-                applyFailure(DisplayAPIError.notConfigured, generation: generation)
+                applyFailure(DisplayAPIError.notConfigured, generation: generation, clearImage: true)
                 try? await Task.sleep(for: .seconds(2))
                 continue
             }
@@ -173,10 +184,20 @@ final class DisplaySession: ObservableObject {
         return seconds
     }
 
-    private func applyFailure(_ error: Error, generation: Int) {
+    /// Keeps the last frame on transient failures; clears only when forced (e.g. not configured).
+    private func applyFailure(_ error: Error, generation: Int, clearImage: Bool = false) {
         guard generation == self.generation else { return }
-        image = nil
-        lastChangeToken = nil
+
+        let mustClear = clearImage
+            || (error as? DisplayAPIError) == .notConfigured
+            || image == nil
+
+        if mustClear {
+            image = nil
+            lastChangeToken = nil
+            filename = nil
+        }
+
         phase = .failed(error.localizedDescription)
     }
 

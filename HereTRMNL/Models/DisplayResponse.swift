@@ -65,17 +65,28 @@ struct DisplayResponse: Decodable, Sendable, Equatable {
         return code == 0 || code == 200
     }
 
-    /// Upgrade `http` image URLs only when the API base itself is HTTPS.
+    /// Upgrade relative/`http` image URLs against the API base when appropriate.
     func resolvingImageURL(relativeTo apiBaseURL: URL) -> URL? {
         guard let imageURL else { return nil }
-        guard var components = URLComponents(url: imageURL, resolvingAgainstBaseURL: false) else {
-            return imageURL
+
+        let resolved: URL
+        if imageURL.scheme == nil || imageURL.host == nil {
+            guard let absolute = URL(string: imageURL.relativeString, relativeTo: apiBaseURL)?.absoluteURL else {
+                return nil
+            }
+            resolved = absolute
+        } else {
+            resolved = imageURL
+        }
+
+        guard var components = URLComponents(url: resolved, resolvingAgainstBaseURL: false) else {
+            return resolved
         }
         if components.scheme?.lowercased() == "http",
            apiBaseURL.scheme?.lowercased() == "https" {
             components.scheme = "https"
         }
-        return components.url ?? imageURL
+        return components.url ?? resolved
     }
 
     private static func decodeFlexibleInt(

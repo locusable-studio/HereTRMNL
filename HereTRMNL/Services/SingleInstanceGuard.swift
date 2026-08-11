@@ -1,7 +1,8 @@
 import AppKit
 
+@MainActor
 enum SingleInstanceGuard {
-    /// If another running copy exists, activate it and terminate this process.
+    /// If another running copy exists, activate it and exit this process.
     static func ensureSingleInstance() {
         guard !AppRuntime.isRunningTests else { return }
 
@@ -12,8 +13,7 @@ enum SingleInstanceGuard {
         }
 
         guard let existing = others.first else { return }
-        existing.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
-        NSApp.terminate(nil)
+        existing.activate(options: [.activateAllWindows])
         exit(0)
     }
 }
