@@ -3,6 +3,17 @@
     <channel>
         <title>HereTRMNL</title>
         <item>
+            <title>2026.8.12.1</title>
+            <pubDate>Wed, 12 Aug 2026 06:57:23 +0000</pubDate>
+            <sparkle:version>26</sparkle:version>
+            <sparkle:shortVersionString>2026.8.12.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/locusable-studio/HereTRMNL/releases/download/v2026.8.12.1/HereTRMNL-2026.8.12.1.dmg" length="1602841" type="application/octet-stream" sparkle:edSignature="clw4vpV7D0dBMzv/6ascqah7g7tOfZO6lrftv3Gk68cOr/q67Hcnbyt5oqj9TuNpEvIEWLVClPGQKkAGRoYcBw=="/>
+            <sparkle:deltas>
+                <enclosure url="https://github.com/locusable-studio/HereTRMNL/releases/download/v2026.8.12.1/HereTRMNL26-21.delta" sparkle:deltaFrom="21" length="66654" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="977808" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="i32QxfyRbwZgB7P3Fsppf3qUmEoQaRZDnJVFqQhsEApJ9UGVpNYsggCnB/iRYmHTlTgpWpN+yBTt11+KQLi+DQ=="/>
+            </sparkle:deltas>
+        </item>
+        <item>
             <title>2026.8.12</title>
             <pubDate>Wed, 12 Aug 2026 06:44:17 +0000</pubDate>
             <sparkle:version>21</sparkle:version>
