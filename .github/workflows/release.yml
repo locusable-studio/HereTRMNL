@@ -1,0 +1,340 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PROJECT: HereTRMNL.xcodeproj
+  SCHEME: HereTRMNL
+  APP_BUNDLE_NAME: HereTRMNL
+  DMG_PREFIX: HereTRMNL
+  TEAM_ID: BQF6YM3NLN
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: macos-26
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          BUILD_NUMBER=$(git rev-list --count HEAD)
+          # Versioned asset: immutable forever for this tag.
+          DMG_NAME="${DMG_PREFIX}-${VERSION}.dmg"
+          # Website / marketing asset: fixed name so /releases/latest/download stays stable.
+          STABLE_DMG_NAME="${DMG_PREFIX}.dmg"
+          REPO="${{ github.repository }}"
+          # Appcast enclosure MUST use the versioned release URL (immutable).
+          DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${TAG}/${DMG_NAME}"
+          # Official site button should use this URL (never changes across releases).
+          LATEST_DOWNLOAD_URL="https://github.com/${REPO}/releases/latest/download/${STABLE_DMG_NAME}"
+          # Sparkle feed URL (path stable; file content updates on main).
+          APPCAST_URL="https://raw.githubusercontent.com/${REPO}/main/Updates/appcast.xml"
+
+          {
+            echo "tag=$TAG"
+            echo "version=$VERSION"
+            echo "build_number=$BUILD_NUMBER"
+            echo "dmg_name=$DMG_NAME"
+            echo "stable_dmg_name=$STABLE_DMG_NAME"
+            echo "download_url=$DOWNLOAD_URL"
+            echo "latest_download_url=$LATEST_DOWNLOAD_URL"
+            echo "appcast_url=$APPCAST_URL"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Version: $VERSION (build $BUILD_NUMBER)"
+          echo "Immutable release asset: $DOWNLOAD_URL"
+          echo "Stable website download: $LATEST_DOWNLOAD_URL"
+          echo "Sparkle appcast: $APPCAST_URL"
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Download Metal Toolchain
+        run: |
+          sudo xcodebuild -runFirstLaunch || true
+          MAJOR=$(sw_vers -productVersion | cut -d. -f1)
+          if [ "$MAJOR" -ge 26 ]; then
+            for i in 1 2 3 4 5; do
+              sudo xcodebuild -downloadComponent MetalToolchain && break
+              sleep 10
+            done
+            xcrun -f metal >/dev/null 2>&1 || {
+              echo "::error::Metal Toolchain unavailable"
+              exit 1
+            }
+          fi
+
+      - name: Import signing certificate
+        env:
+          CERTIFICATE_P12: ${{ secrets.DEVELOPER_ID_APPLICATION_CERTIFICATE_P12 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_APPLICATION_CERTIFICATE_PASSWORD }}
+        run: |
+          KEYCHAIN_PASSWORD="heretrmnl-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          CERT_PATH="$RUNNER_TEMP/certificate.p12"
+          echo "$CERTIFICATE_P12" | base64 --decode > "$CERT_PATH"
+          security import "$CERT_PATH" \
+            -P "$CERTIFICATE_PASSWORD" \
+            -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          rm -f "$CERT_PATH"
+
+          security list-keychain -d user -s "$KEYCHAIN_PATH" login.keychain-db
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" \
+            | sed -n 's/.*"\(Developer ID Application:[^"]*\)".*/\1/p' \
+            | head -1)
+          if [ -z "$IDENTITY" ]; then
+            echo "::error::No Developer ID Application identity found"
+            security find-identity -v -p codesigning "$KEYCHAIN_PATH" || true
+            exit 1
+          fi
+          echo "CODESIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+          echo "Using identity: $IDENTITY"
+
+      - name: Set up notarization credentials
+        env:
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_APP_PASSWORD: ${{ secrets.NOTARY_APP_PASSWORD }}
+        run: |
+          if [ -z "$NOTARY_APPLE_ID" ] || [ -z "$NOTARY_APP_PASSWORD" ]; then
+            echo "::error::Missing NOTARY_APPLE_ID or NOTARY_APP_PASSWORD secrets"
+            exit 1
+          fi
+          xcrun notarytool store-credentials "heretrmnl-notary" \
+            --apple-id "$NOTARY_APPLE_ID" \
+            --team-id "$TEAM_ID" \
+            --password "$NOTARY_APP_PASSWORD"
+
+      - name: Set up Sparkle signing key
+        env:
+          SPARKLE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/private_keys
+          echo "$SPARKLE_KEY" > ~/private_keys/sparkle_ed.key
+
+      - name: Resolve dependencies
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project "$PROJECT" \
+            -scheme "$SCHEME"
+
+      - name: Stamp version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          BUILD="${{ steps.version.outputs.build_number }}"
+          xcrun agvtool new-marketing-version "$VERSION"
+          xcrun agvtool new-version -all "$BUILD"
+
+      - name: Archive
+        run: |
+          sudo DevToolsSecurity -enable
+
+          xcodebuild archive \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -archivePath "build/${DMG_PREFIX}.xcarchive" \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="Developer ID Application" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_STYLE=Manual \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            ASSETCATALOG_COMPILER_APPICON_NAME=AppIcon
+
+      - name: Export archive
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath "build/${DMG_PREFIX}.xcarchive" \
+            -exportPath build/export \
+            -exportOptionsPlist ExportOptions.plist
+
+      - name: Sign nested Sparkle components
+        run: |
+          APP_PATH="build/export/${APP_BUNDLE_NAME}.app"
+          ENTITLEMENTS_PATH="$RUNNER_TEMP/app.entitlements"
+          codesign -d --entitlements :- "$APP_PATH" > "$ENTITLEMENTS_PATH"
+
+          find "$APP_PATH" -name "*.xpc" -print0 | while IFS= read -r -d '' xpc; do
+            codesign --force --options runtime --sign "$CODESIGN_IDENTITY" "$xpc"
+          done
+
+          SPARKLE_FW="$APP_PATH/Contents/Frameworks/Sparkle.framework"
+          if [ -d "$SPARKLE_FW" ]; then
+            codesign --force --options runtime --sign "$CODESIGN_IDENTITY" "$SPARKLE_FW"
+          fi
+
+          codesign --force --options runtime \
+            --entitlements "$ENTITLEMENTS_PATH" \
+            --sign "$CODESIGN_IDENTITY" \
+            "$APP_PATH"
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+
+      - name: Create DMG
+        run: |
+          DMG_NAME="${{ steps.version.outputs.dmg_name }}"
+          APP_PATH="build/export/${APP_BUNDLE_NAME}.app"
+          npx create-dmg "$APP_PATH" build/ --overwrite --no-code-sign
+          GENERATED_DMG=$(find build -maxdepth 1 -name "*.dmg" | head -1)
+          mv "$GENERATED_DMG" "build/${DMG_NAME}"
+
+      - name: Sign DMG
+        run: |
+          DMG_NAME="${{ steps.version.outputs.dmg_name }}"
+          codesign --force --sign "$CODESIGN_IDENTITY" "build/${DMG_NAME}"
+
+      - name: Notarize DMG
+        run: |
+          DMG_NAME="${{ steps.version.outputs.dmg_name }}"
+          xcrun notarytool submit "build/${DMG_NAME}" \
+            --keychain-profile "heretrmnl-notary" \
+            --wait
+          xcrun stapler staple "build/${DMG_NAME}"
+
+      - name: Create GitHub Release and Sparkle appcast
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SPARKLE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          DMG_NAME="${{ steps.version.outputs.dmg_name }}"
+          STABLE_DMG_NAME="${{ steps.version.outputs.stable_dmg_name }}"
+          DOWNLOAD_URL="${{ steps.version.outputs.download_url }}"
+          REPO="${{ github.repository }}"
+
+          # Fixed-name copy for a permanent /releases/latest/download/HereTRMNL.dmg URL.
+          # Copy after notarization+staple so the ticket is preserved; do not re-sign.
+          cp "build/${DMG_NAME}" "build/${STABLE_DMG_NAME}"
+
+          DERIVED_DATA=$(xcodebuild -project "$PROJECT" -scheme "$SCHEME" -showBuildSettings 2>/dev/null \
+            | grep -m1 BUILD_DIR | awk '{print $3}' | sed 's|/Build/Products||')
+          GENERATE_APPCAST=$(find "$DERIVED_DATA" -name "generate_appcast" -type f 2>/dev/null | head -1)
+          if [ -z "$GENERATE_APPCAST" ]; then
+            GENERATE_APPCAST=$(find ~/Library/Developer/Xcode -name "generate_appcast" -type f 2>/dev/null | head -1)
+          fi
+          if [ -z "$GENERATE_APPCAST" ]; then
+            echo "::error::Sparkle generate_appcast not found"
+            exit 1
+          fi
+
+          ARCHIVES_DIR="build/sparkle-archives"
+          rm -rf "$ARCHIVES_DIR"
+          mkdir -p "$ARCHIVES_DIR"
+          cp "build/${DMG_NAME}" "$ARCHIVES_DIR/"
+          if [ -f Updates/appcast.xml ]; then
+            cp Updates/appcast.xml "$ARCHIVES_DIR/appcast.xml"
+          fi
+
+          # Fetch previous versioned DMGs so generate_appcast can build deltas
+          # (Sparkle default --maximum-deltas is 5). Skip the always-latest HereTRMNL.dmg.
+          PREV_TAGS=$(gh release list --repo "$REPO" --limit 20 --json tagName,isDraft \
+            --jq '[.[] | select(.isDraft == false) | .tagName | select(startswith("v"))] | .[:5] | .[]')
+          for prev in $PREV_TAGS; do
+            if [ "$prev" = "$TAG" ]; then
+              continue
+            fi
+            echo "Downloading previous release asset from $prev ..."
+            gh release download "$prev" --repo "$REPO" --dir "$ARCHIVES_DIR" --pattern 'HereTRMNL-*.dmg' || true
+          done
+
+          # Avoid duplicate "latest" alias if any release shipped it as a pattern match.
+          rm -f "$ARCHIVES_DIR/${STABLE_DMG_NAME}"
+
+          echo "Archives for generate_appcast:"
+          ls -la "$ARCHIVES_DIR"
+
+          echo "$SPARKLE_KEY" > ~/private_keys/sparkle_ed.key
+          DOWNLOAD_PREFIX="https://github.com/${REPO}/releases/download/${TAG}/"
+          "$GENERATE_APPCAST" \
+            --ed-key-file ~/private_keys/sparkle_ed.key \
+            --download-url-prefix "$DOWNLOAD_PREFIX" \
+            -o "$ARCHIVES_DIR/appcast.xml" \
+            "$ARCHIVES_DIR"
+
+          # Retarget older DMG enclosures to the release that owns each asset
+          # (--download-url-prefix otherwise points every enclosure at the new tag).
+          ARCHIVES_DIR="$ARCHIVES_DIR" REPO="$REPO" python3 <<'PY'
+          import os, pathlib, re
+          archives = pathlib.Path(os.environ["ARCHIVES_DIR"])
+          repo = os.environ["REPO"]
+          appcast_path = archives / "appcast.xml"
+
+          text = appcast_path.read_text()
+
+          def rewrite_dmg(match):
+              filename, version = match.group(1), match.group(2)
+              return f"https://github.com/{repo}/releases/download/v{version}/{filename}"
+
+          text, count = re.subn(
+              r'https://github\.com/[^"]+/releases/download/v[^/]+/(HereTRMNL-([^"]+)\.dmg)',
+              rewrite_dmg,
+              text,
+          )
+          appcast_path.write_text(text)
+          print(f"Rewrote {count} versioned DMG enclosure URL(s) to owning release tags")
+          PY
+
+          # Ensure the newest full enclosure points at this tag's versioned asset URL.
+          if ! grep -q "$DOWNLOAD_URL" "$ARCHIVES_DIR/appcast.xml"; then
+            echo "::warning::Expected enclosure URL not found in appcast: $DOWNLOAD_URL"
+          fi
+
+          DELTA_ARGS=()
+          shopt -s nullglob
+          for delta in "$ARCHIVES_DIR"/*.delta; do
+            DELTA_ARGS+=("$delta")
+          done
+          shopt -u nullglob
+
+          gh release create "$TAG" \
+            "build/${DMG_NAME}" \
+            "build/${STABLE_DMG_NAME}" \
+            "${DELTA_ARGS[@]}" \
+            --title "HereTRMNL ${VERSION}" \
+            --notes "" \
+            --verify-tag
+
+          cp "$ARCHIVES_DIR/appcast.xml" Updates/appcast.xml
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          DEFAULT_BRANCH=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+          DEFAULT_BRANCH=${DEFAULT_BRANCH:-main}
+
+          git fetch origin "$DEFAULT_BRANCH"
+          git stash push -u -m "appcast" -- Updates/appcast.xml
+          git checkout -B "$DEFAULT_BRANCH" "origin/${DEFAULT_BRANCH}"
+          git stash pop || true
+          git add Updates/appcast.xml
+          if git diff --cached --quiet; then
+            echo "No appcast changes"
+          else
+            git commit -m "ci: update appcast for ${VERSION}"
+            git push origin "HEAD:${DEFAULT_BRANCH}"
+          fi

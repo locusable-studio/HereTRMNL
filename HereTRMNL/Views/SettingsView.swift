@@ -1,8 +1,11 @@
+@preconcurrency import Sparkle
 import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject private var session: DisplaySession
     @EnvironmentObject private var settings: AppSettings
+
+    private let updater: SPUUpdater
 
     @State private var isShowingConnectionSheet = false
     @State private var draftBaseURL = ""
@@ -10,6 +13,10 @@ struct SettingsView: View {
     @State private var draftAccessToken = ""
     @State private var isConnecting = false
     @State private var connectError: String?
+
+    init(updater: SPUUpdater) {
+        self.updater = updater
+    }
 
     var body: some View {
         Form {
@@ -64,6 +71,25 @@ struct SettingsView: View {
                 Text("Display")
             } footer: {
                 Text("Display tone inverts the fetched screen for dark presentation. Automatic follows the system appearance.")
+            }
+
+            Section {
+                LabeledContent("Version") {
+                    Text(versionLabel)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+
+                LabeledContent("Channel") {
+                    Text(UpdateChannel.displayName)
+                        .foregroundStyle(.secondary)
+                }
+
+                CheckForUpdatesView(updater: updater)
+
+                UpdaterSettingsView(updater: updater)
+            } header: {
+                Text("Updates")
             }
         }
         .formStyle(.grouped)
@@ -216,6 +242,12 @@ struct SettingsView: View {
 
     private var opacityLabel: String {
         "\(Int((settings.windowOpacity * 100).rounded()))%"
+    }
+
+    private var versionLabel: String {
+        let version = Bundle.main.releaseVersionNumber ?? "—"
+        let build = Bundle.main.buildVersionNumber ?? "—"
+        return "\(version) (\(build))"
     }
 
     private func openConnectionSheet(prefill: Bool) {

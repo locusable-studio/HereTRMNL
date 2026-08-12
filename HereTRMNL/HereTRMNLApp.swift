@@ -1,4 +1,5 @@
 import AppKit
+@preconcurrency import Sparkle
 import SwiftUI
 
 @main
@@ -7,8 +8,17 @@ struct HereTRMNLApp: App {
     @StateObject private var displaySession: DisplaySession
     @StateObject private var windowChrome: WindowChromeController
 
+    private let updaterController: SPUStandardUpdaterController
+    private let updaterDelegate = HereTRMNLUpdaterDelegate()
+
     init() {
         SingleInstanceGuard.ensureSingleInstance()
+
+        updaterController = SPUStandardUpdaterController(
+            startingUpdater: !AppRuntime.isRunningTests,
+            updaterDelegate: updaterDelegate,
+            userDriverDelegate: nil
+        )
 
         let settings = AppSettings.shared
         let session = DisplaySession(settings: settings)
@@ -26,11 +36,16 @@ struct HereTRMNLApp: App {
         if !AppRuntime.isRunningTests {
             session.start()
         }
+
+        if !AppRuntime.isRunningTests,
+           updaterController.updater.automaticallyChecksForUpdates {
+            updaterController.updater.checkForUpdatesInBackground()
+        }
     }
 
     var body: some Scene {
         MenuBarExtra("HereTRMNL", systemImage: "photo.on.rectangle") {
-            StatusMenuView()
+            StatusMenuView(updater: updaterController.updater)
         }
 
         Window("HereTRMNL", id: "display") {
@@ -53,6 +68,9 @@ struct HereTRMNLApp: App {
         .commands {
             CommandGroup(replacing: .newItem) {}
             CommandGroup(replacing: .appTermination) {}
+            CommandGroup(after: .appInfo) {
+                CheckForUpdatesView(updater: updaterController.updater)
+            }
             CommandGroup(after: .toolbar) {
                 Button("Refresh Now") {
                     Task { await displaySession.refresh(manual: true) }
@@ -80,11 +98,11 @@ struct HereTRMNLApp: App {
         }
 
         Settings {
-            SettingsView()
+            SettingsView(updater: updaterController.updater)
                 .environmentObject(displaySession)
                 .environmentObject(settings)
         }
         .windowResizability(.contentSize)
-        .defaultSize(width: 540, height: 520)
+        .defaultSize(width: 540, height: 560)
     }
 }
