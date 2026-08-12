@@ -54,6 +54,10 @@ struct StatusMenuView: View {
 
             Divider()
 
+            Button("About HereTRMNL") {
+                AboutWindowController.shared.openAbout()
+            }
+
             Button("Quit HereTRMNL") {
                 NSApplication.shared.terminate(nil)
             }

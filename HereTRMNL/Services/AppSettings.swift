@@ -8,6 +8,7 @@ final class AppSettings: ObservableObject {
     private enum Keys {
         static let baseURL = "baseURL"
         static let deviceID = "deviceID"
+        static let accessToken = "accessToken"
         static let lastContentWidth = "lastContentWidth"
         static let lastContentHeight = "lastContentHeight"
         static let displayTone = "displayTone"
@@ -17,9 +18,8 @@ final class AppSettings: ObservableObject {
     @Published private(set) var baseURLString: String
     /// Committed device ID (persisted).
     @Published private(set) var deviceID: String
-    /// Committed access token (Keychain).
+    /// Committed access token (persisted).
     @Published private(set) var accessToken: String
-    @Published private(set) var lastKeychainError: String?
 
     @Published var displayTone: DisplayTone {
         didSet { UserDefaults.standard.set(displayTone.rawValue, forKey: Keys.displayTone) }
@@ -62,7 +62,7 @@ final class AppSettings: ObservableObject {
     ) {
         self.baseURLString = baseURLString ?? UserDefaults.standard.string(forKey: Keys.baseURL) ?? ""
         self.deviceID = deviceID ?? UserDefaults.standard.string(forKey: Keys.deviceID) ?? ""
-        self.accessToken = accessToken ?? KeychainStore.loadAccessToken() ?? ""
+        self.accessToken = accessToken ?? UserDefaults.standard.string(forKey: Keys.accessToken) ?? ""
 
         if let raw = UserDefaults.standard.string(forKey: Keys.displayTone),
            let tone = DisplayTone(rawValue: raw) {
@@ -75,31 +75,17 @@ final class AppSettings: ObservableObject {
     }
 
     /// Persist credentials after a successful live server check.
-    @discardableResult
-    func applyCredentials(baseURLString: String, deviceID: String, accessToken: String) -> Bool {
-        lastKeychainError = nil
-
+    func applyCredentials(baseURLString: String, deviceID: String, accessToken: String) {
         let url = baseURLString.trimmingCharacters(in: .whitespacesAndNewlines)
         let id = deviceID.trimmingCharacters(in: .whitespacesAndNewlines)
         let token = accessToken.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        do {
-            if token.isEmpty {
-                try KeychainStore.deleteAccessToken()
-            } else {
-                try KeychainStore.saveAccessToken(token)
-            }
-        } catch {
-            lastKeychainError = error.localizedDescription
-            return false
-        }
-
         UserDefaults.standard.set(url, forKey: Keys.baseURL)
         UserDefaults.standard.set(id, forKey: Keys.deviceID)
+        UserDefaults.standard.set(token, forKey: Keys.accessToken)
         self.baseURLString = url
         self.deviceID = id
         self.accessToken = token
-        return true
     }
 
     func setLaunchAtLogin(_ enabled: Bool) {

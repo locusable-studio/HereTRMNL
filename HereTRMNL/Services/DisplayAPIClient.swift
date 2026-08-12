@@ -7,7 +7,6 @@ enum DisplayAPIError: LocalizedError, Equatable {
     case decoding(String)
     case server(status: Int, message: String?)
     case http(statusCode: Int)
-    case keychain(String)
 
     var errorDescription: String? {
         switch self {
@@ -26,8 +25,6 @@ enum DisplayAPIError: LocalizedError, Equatable {
             return String(localized: "Server error \(status).")
         case .http(let statusCode):
             return String(localized: "HTTP \(statusCode).")
-        case .keychain(let detail):
-            return String(localized: "Could not save access token: \(detail)")
         }
     }
 }

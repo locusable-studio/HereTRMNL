@@ -375,36 +375,19 @@
         }
       }
     },
-    "Could not save access token: %@" : {
+    "Credentials are verified before saving." : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Could not save access token: %@"
+            "value" : "Credentials are verified before saving."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "无法保存访问令牌：%@"
-          }
-        }
-      }
-    },
-    "Credentials are verified before saving. The access token is stored securely in Keychain." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Credentials are verified before saving. The access token is stored securely in Keychain."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "凭证会在保存前进行验证，访问令牌安全存储在钥匙串中。"
+            "value" : "凭证会在保存前进行验证。"
           }
         }
       }
@@ -677,26 +660,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保持置顶"
-          }
-        }
-      }
-    },
-    "Keychain error (%d)" : {
-
-    },
-    "Keychain error (%lld)" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keychain error (%lld)"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "钥匙串错误（%lld）"
           }
         }
       }
@@ -1211,23 +1174,6 @@
         }
       }
     },
-    "Unknown Keychain error." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unknown Keychain error."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未知钥匙串错误。"
-          }
-        }
-      }
-    },
     "Unpin" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1479,6 +1425,125 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在验证…"
+          }
+        }
+      }
+    },
+    "About HereTRMNL" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About HereTRMNL"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关于 HereTRMNL"
+          }
+        }
+      }
+    },
+    "GitHub Repository" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub Repository"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GitHub 仓库"
+          }
+        }
+      }
+    },
+    "LaraPaper desktop display for macOS" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LaraPaper desktop display for macOS"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LaraPaper 的 macOS 桌面显示端"
+          }
+        }
+      }
+    },
+    "Links" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Links"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "链接"
+          }
+        }
+      }
+    },
+    "Software update framework" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Software update framework"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "软件更新框架"
+          }
+        }
+      }
+    },
+    "Third-party dependencies" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Third-party dependencies"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第三方依赖"
+          }
+        }
+      }
+    },
+    "Version info" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version info"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本信息"
           }
         }
       }

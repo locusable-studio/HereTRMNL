@@ -144,7 +144,7 @@ struct SettingsView: View {
                 ? String(localized: "Edit Connection")
                 : String(localized: "Set Up Connection"))
         } footer: {
-            Text("Credentials are verified before saving. The access token is stored securely in Keychain.")
+            Text("Credentials are verified before saving.")
         }
     }
 
@@ -242,15 +242,11 @@ struct SettingsView: View {
             return
         }
 
-        guard settings.applyCredentials(
+        settings.applyCredentials(
             baseURLString: trimmedURL,
             deviceID: trimmedID,
             accessToken: token
-        ) else {
-            connectError = settings.lastKeychainError
-                ?? String(localized: "Unknown Keychain error.")
-            return
-        }
+        )
 
         isEditing = false
         draftAccessToken = ""
