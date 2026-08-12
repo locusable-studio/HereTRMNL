@@ -1,23 +1,6 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "••••••••": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "••••••••"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "••••••••"
-          }
-        }
-      }
-    },
     "AA:BB:CC:DD:EE:FF": {
       "extractionState": "manual",
       "localizations": {
@@ -65,40 +48,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "访问令牌"
-          }
-        }
-      }
-    },
-    "Access Token:": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Access Token:"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "访问令牌："
-          }
-        }
-      }
-    },
-    "Add your LaraPaper server to start showing screens.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add your LaraPaper server to start showing screens."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "添加 LaraPaper 服务器以开始显示画面。"
           }
         }
       }
@@ -290,23 +239,6 @@
         }
       }
     },
-    "Connect a LaraPaper server in Settings to show the next screen.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Connect a LaraPaper server in Settings to show the next screen."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "在设置中连接 LaraPaper 服务器，以显示下一屏。"
-          }
-        }
-      }
-    },
     "Connect to a LaraPaper server to use this Mac as a display device.": {
       "extractionState": "manual",
       "localizations": {
@@ -320,23 +252,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "连接到 LaraPaper 服务器，将这台 Mac 用作显示设备。"
-          }
-        }
-      }
-    },
-    "Connect…": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Connect…"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "连接…"
           }
         }
       }
@@ -443,23 +358,6 @@
         }
       }
     },
-    "Could Not Connect": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Could Not Connect"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "无法连接"
-          }
-        }
-      }
-    },
     "Could not parse display response: %@": {
       "extractionState": "manual",
       "localizations": {
@@ -473,23 +371,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "无法解析画面响应：%@"
-          }
-        }
-      }
-    },
-    "Could Not Save": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Could Not Save"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "无法保存"
           }
         }
       }
@@ -541,23 +422,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "设备 ID"
-          }
-        }
-      }
-    },
-    "Device ID:": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Device ID:"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "设备 ID："
           }
         }
       }
@@ -626,40 +490,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "画面色调"
-          }
-        }
-      }
-    },
-    "Display tone inverts the fetched screen for dark presentation. Automatic follows the system appearance.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Display tone inverts the fetched screen for dark presentation. Automatic follows the system appearance."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "画面色调可反色显示已拉取画面。自动会跟随系统外观。"
-          }
-        }
-      }
-    },
-    "Display Tone:": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Display Tone:"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "画面色调："
           }
         }
       }
@@ -783,23 +613,6 @@
         }
       }
     },
-    "Incomplete": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Incomplete"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "未完成"
-          }
-        }
-      }
-    },
     "LaraPaper desktop display for macOS": {
       "extractionState": "manual",
       "localizations": {
@@ -847,23 +660,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "登录时打开"
-          }
-        }
-      }
-    },
-    "Launch at Login:": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Launch at Login:"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "登录时打开："
           }
         }
       }
@@ -953,23 +749,6 @@
         }
       }
     },
-    "Open Settings": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open Settings"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "打开设置"
-          }
-        }
-      }
-    },
     "Options": {
       "extractionState": "manual",
       "localizations": {
@@ -1017,23 +796,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "方位"
-          }
-        }
-      }
-    },
-    "Ready": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ready"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "已就绪"
           }
         }
       }
@@ -1102,23 +864,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "保存"
-          }
-        }
-      }
-    },
-    "Save Connection": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Save Connection"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "保存连接"
           }
         }
       }
@@ -1259,23 +1004,6 @@
         }
       }
     },
-    "Server URL:": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Server URL:"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "服务器 URL："
-          }
-        }
-      }
-    },
     "Set Up Connection": {
       "extractionState": "manual",
       "localizations": {
@@ -1340,23 +1068,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "状态"
-          }
-        }
-      }
-    },
-    "Status:": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Status:"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "状态："
           }
         }
       }
@@ -1429,23 +1140,6 @@
         }
       }
     },
-    "Try Again": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Try Again"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "重试"
-          }
-        }
-      }
-    },
     "Unable to Load Display": {
       "extractionState": "manual",
       "localizations": {
@@ -1510,57 +1204,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "正在更新…"
-          }
-        }
-      }
-    },
-    "Use Connection Settings in the menu bar.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Use Connection Settings in the menu bar."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "请通过菜单栏打开连接设置。"
-          }
-        }
-      }
-    },
-    "Use Refresh Now in the menu bar.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Use Refresh Now in the menu bar."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "请通过菜单栏使用立即刷新。"
-          }
-        }
-      }
-    },
-    "Uses official TRMNL headers ID and Access-Token. Enter only the LaraPaper base URL. Credentials are saved when you connect.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Uses official TRMNL headers ID and Access-Token. Enter only the LaraPaper base URL. Credentials are saved when you connect."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "使用官方 TRMNL 请求头 ID 与 Access-Token。只需填写 LaraPaper 根地址。凭证在点击连接时保存。"
           }
         }
       }
@@ -1663,6 +1306,57 @@
           "stringUnit": {
             "state": "translated",
             "value": "退出"
+          }
+        }
+      }
+    },
+    "Connect a LaraPaper server in Connection Settings to show the next screen.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect a LaraPaper server in Connection Settings to show the next screen."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在连接设置中连接 LaraPaper 服务器，以显示下一屏。"
+          }
+        }
+      }
+    },
+    "Use Connection Settings in the menu bar.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use Connection Settings in the menu bar."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请通过菜单栏打开连接设置。"
+          }
+        }
+      }
+    },
+    "Use Refresh Now in the menu bar.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use Refresh Now in the menu bar."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "请通过菜单栏使用立即刷新。"
           }
         }
       }

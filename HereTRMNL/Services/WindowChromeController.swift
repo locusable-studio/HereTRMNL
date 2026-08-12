@@ -6,7 +6,7 @@ final class WindowChromeController: ObservableObject {
     /// TRMNL OG default; overridden by last remembered device size when available.
     static let defaultContentSize = NSSize(width: 800, height: 480)
 
-    /// Margin from the chosen display's visible edges.
+    /// Margin from the chosen display's placement area edges.
     static let screenEdgeMargin: CGFloat = 24
 
     @Published private(set) var contentSize: NSSize
@@ -57,7 +57,6 @@ final class WindowChromeController: ObservableObject {
             if changed {
                 self.contentSize = size
             }
-            // Always re-apply from contentSize so origin stays consistent.
             self.applyContentFrame(animated: animated && changed)
         }
     }
@@ -88,45 +87,34 @@ final class WindowChromeController: ObservableObject {
     private func applyChrome() {
         guard let window else { return }
 
-        window.titleVisibility = .hidden
-        window.titlebarAppearsTransparent = true
-        window.titlebarSeparatorStyle = .none
-        window.styleMask.insert(.fullSizeContentView)
-        window.styleMask.remove(.resizable)
+        // Borderless: no title bar means AppKit's default `canBecomeKey`/`canBecomeMain`
+        // are false, so this window never steals focus from other apps.
+        window.styleMask = [.borderless]
         window.isMovable = false
         window.isMovableByWindowBackground = false
         window.hasShadow = false
         window.animationBehavior = .none
-        hideTrafficLights()
         applyBackdrop()
     }
 
     private func applyDesktopBehavior() {
         guard let window else { return }
 
-        // Above wallpaper, below Finder desktop icons.
-        window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desktopIconWindow)) - 1)
+        // Above the wallpaper, below Finder desktop icons.
+        window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desktopWindow)) + 1)
         window.collectionBehavior = [
             .canJoinAllSpaces,
             .stationary,
             .ignoresCycle,
             .fullScreenAuxiliary,
         ]
+        // Always click-through: this window never intercepts mouse input.
         window.ignoresMouseEvents = true
         window.hidesOnDeactivate = false
-        hideTrafficLights()
-        window.toolbar = nil
     }
 
     private func applyBackdrop() {
         window?.backgroundColor = backdropColor
-    }
-
-    private func hideTrafficLights() {
-        guard let window else { return }
-        for buttonType: NSWindow.ButtonType in [.closeButton, .miniaturizeButton, .zoomButton] {
-            window.standardWindowButton(buttonType)?.isHidden = true
-        }
     }
 
     private func installObservers(for window: NSWindow) {
@@ -135,59 +123,51 @@ final class WindowChromeController: ObservableObject {
         }
         observers.removeAll()
 
-        let center = NotificationCenter.default
-        observers.append(center.addObserver(
+        observers.append(NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
+                self?.normalizePreferredScreenIfNeeded()
                 self?.applyPlacement(animated: false)
-            }
-        })
-        observers.append(center.addObserver(
-            forName: NSWindow.didBecomeKeyNotification,
-            object: window,
-            queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in
-                self?.applyDesktopBehavior()
-            }
-        })
-        observers.append(center.addObserver(
-            forName: NSWindow.didResignKeyNotification,
-            object: window,
-            queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in
-                self?.applyDesktopBehavior()
             }
         })
     }
 
     private func applyContentFrame(animated: Bool) {
         guard let window else { return }
+        normalizePreferredScreenIfNeeded()
 
-        let contentRect = NSRect(origin: .zero, size: contentSize)
-        var newFrame = window.frameRect(forContentRect: contentRect)
-        // Size from content; never trust the live window.frame (SwiftUI/chrome can drift).
-        if let origin = placementOrigin(for: newFrame.size) {
-            newFrame.origin = origin
+        guard let screen = DisplayScreen.resolve(preferredID: settings.preferredScreenID) else {
+            return
         }
-        newFrame = newFrame.integral
+
+        let area = DisplayScreen.placementArea(for: screen)
+        let margin = Self.screenEdgeMargin
+        let fittedContent = WindowPosition.fittedSize(
+            for: contentSize,
+            in: area,
+            margin: margin
+        )
+        let contentRect = NSRect(origin: .zero, size: fittedContent)
+        var newFrame = window.frameRect(forContentRect: contentRect)
+        // Clamp and place the outer frame so chrome cannot push past the Dock / edges.
+        newFrame = settings.windowPosition.frame(
+            for: newFrame.size,
+            in: area,
+            margin: margin
+        )
         guard !newFrame.equalTo(window.frame) else { return }
         window.setFrame(newFrame, display: true, animate: animated)
     }
 
-    private func placementOrigin(for size: NSSize) -> NSPoint? {
-        guard let screen = DisplayScreen.resolve(preferredID: settings.preferredScreenID) else {
-            return nil
+    private func normalizePreferredScreenIfNeeded() {
+        let preferred = settings.preferredScreenID
+        guard preferred != 0 else { return }
+        if DisplayScreen.screen(forDisplayID: preferred) == nil {
+            settings.preferredScreenID = 0
         }
-        return settings.windowPosition.origin(
-            for: size,
-            in: DisplayScreen.placementArea(for: screen),
-            margin: Self.screenEdgeMargin
-        )
     }
 }
 

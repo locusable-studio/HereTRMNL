@@ -33,22 +33,32 @@ enum WindowPosition: String, CaseIterable, Identifiable, Sendable {
         return NSImage(systemSymbolName: name, accessibilityDescription: nil) != nil ? name : nil
     }
 
-    /// Place `size` inside `area` with a fixed margin. Coordinates are snapped to whole points.
-    func origin(for size: NSSize, in area: NSRect, margin: CGFloat) -> NSPoint {
-        let width = min(size.width, max(0, area.width - margin * 2))
-        let height = min(size.height, max(0, area.height - margin * 2))
+    /// Fit `size` into `area` with margin, then place it. Origin and size are both clamped.
+    func frame(for size: NSSize, in area: NSRect, margin: CGFloat) -> NSRect {
+        let fitted = Self.fittedSize(for: size, in: area, margin: margin)
+        let origin = origin(forFitted: fitted, in: area, margin: margin)
+        return NSRect(origin: origin, size: fitted).integral
+    }
 
+    static func fittedSize(for size: NSSize, in area: NSRect, margin: CGFloat) -> NSSize {
+        NSSize(
+            width: min(size.width, max(0, area.width - margin * 2)),
+            height: min(size.height, max(0, area.height - margin * 2))
+        )
+    }
+
+    private func origin(forFitted size: NSSize, in area: NSRect, margin: CGFloat) -> NSPoint {
         let point: NSPoint
         switch self {
         case .topLeft:
             point = NSPoint(
                 x: area.minX + margin,
-                y: area.maxY - height - margin
+                y: area.maxY - size.height - margin
             )
         case .topRight:
             point = NSPoint(
-                x: area.maxX - width - margin,
-                y: area.maxY - height - margin
+                x: area.maxX - size.width - margin,
+                y: area.maxY - size.height - margin
             )
         case .bottomLeft:
             point = NSPoint(
@@ -57,7 +67,7 @@ enum WindowPosition: String, CaseIterable, Identifiable, Sendable {
             )
         case .bottomRight:
             point = NSPoint(
-                x: area.maxX - width - margin,
+                x: area.maxX - size.width - margin,
                 y: area.minY + margin
             )
         case .center:
@@ -86,22 +96,30 @@ enum DisplayScreen {
         screen(forDisplayID: preferredID) ?? NSScreen.screens.first ?? NSScreen.main
     }
 
-    /// Stable placement area: full screen frame inset by safe areas (menu bar / notch),
-    /// not `visibleFrame` (which jumps when the Dock auto-hides).
+    /// Placement area: top from safe area / menu bar; left / right / bottom follow `visibleFrame`
+    /// so the Dock is cleared. Top stays stable when the Dock auto-hides.
     static func placementArea(for screen: NSScreen) -> NSRect {
         let frame = screen.frame
-        let insets = screen.safeAreaInsets
+        let visible = screen.visibleFrame
+        let topInset = max(screen.safeAreaInsets.top, frame.maxY - visible.maxY)
+        let minX = visible.minX
+        let maxX = visible.maxX
+        let minY = visible.minY
+        let maxY = frame.maxY - topInset
         return NSRect(
-            x: frame.minX + insets.left,
-            y: frame.minY + insets.bottom,
-            width: max(0, frame.width - insets.left - insets.right),
-            height: max(0, frame.height - insets.top - insets.bottom)
+            x: minX,
+            y: minY,
+            width: max(0, maxX - minX),
+            height: max(0, maxY - minY)
         )
     }
 
     static func localizedName(for screen: NSScreen, index: Int) -> String {
         let name = screen.localizedName.trimmingCharacters(in: .whitespacesAndNewlines)
         if !name.isEmpty { return name }
-        return String(localized: "Display \(index + 1)")
+        return String.localizedStringWithFormat(
+            String(localized: "Display %lld"),
+            index + 1
+        )
     }
 }

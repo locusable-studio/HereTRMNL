@@ -66,8 +66,6 @@ struct HereTRMNLApp: App {
         }
         .defaultLaunchBehavior(.presented)
         .windowStyle(.hiddenTitleBar)
-        .windowToolbarStyle(.unified)
-        .windowBackgroundDragBehavior(.disabled)
         .windowResizability(.contentSize)
         .defaultSize(
             width: windowChrome.contentSize.width,

@@ -21,6 +21,7 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .frame(width: 540)
+        .fixedSize(horizontal: false, vertical: true)
         .navigationTitle("Connection Settings")
         .onAppear {
             if !settings.isConfigured {

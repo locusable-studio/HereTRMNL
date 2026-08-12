@@ -41,9 +41,7 @@ struct DisplayView: View {
                 } description: {
                     Text(message)
                 } actions: {
-                    Text("Use Connection Settings in the menu bar.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
+                    menuBarHint("Use Connection Settings in the menu bar.")
                 }
             } else if let image = session.image {
                 // Keep the last frame visible even when a later refresh fails.
@@ -59,9 +57,7 @@ struct DisplayView: View {
                 } description: {
                     Text(message)
                 } actions: {
-                    Text("Use Refresh Now in the menu bar.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
+                    menuBarHint("Use Refresh Now in the menu bar.")
                 }
             } else if settings.isConfigured || session.phase == .loading {
                 ProgressView()
@@ -69,11 +65,9 @@ struct DisplayView: View {
                 ContentUnavailableView {
                     Label("Waiting for Display", systemImage: "display")
                 } description: {
-                    Text("Connect a LaraPaper server in Settings to show the next screen.")
+                    Text("Connect a LaraPaper server in Connection Settings to show the next screen.")
                 } actions: {
-                    Text("Use Connection Settings in the menu bar.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
+                    menuBarHint("Use Connection Settings in the menu bar.")
                 }
             }
         }
@@ -81,7 +75,6 @@ struct DisplayView: View {
         .background(canvasBackground)
         .background(WindowChromeInstaller(controller: windowChrome))
         .ignoresSafeArea()
-        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
         .task {
             syncDeviceSize()
             syncWindowPreferences()
@@ -92,6 +85,12 @@ struct DisplayView: View {
         .onChange(of: colorScheme) { _, _ in
             syncWindowPreferences()
         }
+        .onChange(of: settings.windowPosition) { _, _ in
+            windowChrome.applyPlacement()
+        }
+        .onChange(of: settings.preferredScreenID) { _, _ in
+            windowChrome.applyPlacement()
+        }
         .onChange(of: session.deviceContentSize) { _, size in
             if let size {
                 windowChrome.setDeviceContentSize(NSSize(width: size.width, height: size.height))
@@ -100,6 +99,14 @@ struct DisplayView: View {
         .onChange(of: session.image) { _, _ in
             syncWindowPreferences()
         }
+    }
+
+    /// The window is always click-through, so empty/error states only show a passive
+    /// hint; the actual controls live in the menu bar.
+    private func menuBarHint(_ text: LocalizedStringKey) -> some View {
+        Text(text)
+            .font(.callout)
+            .foregroundStyle(.secondary)
     }
 
     private func syncDeviceSize() {
