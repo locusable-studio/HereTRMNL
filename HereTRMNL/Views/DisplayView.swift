@@ -54,6 +54,8 @@ struct DisplayView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .modifier(DisplayToneModifier(invert: shouldInvertImage))
                     .accessibilityLabel(session.filename ?? String(localized: "Display image"))
+                    .gesture(WindowDragGesture())
+                    .allowsWindowActivationEvents()
             } else if case .failed(let message) = session.phase {
                 ContentUnavailableView {
                     Label("Unable to Load Display", systemImage: "exclamationmark.triangle")
@@ -85,12 +87,6 @@ struct DisplayView: View {
         .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
         .task {
             syncAspectRatio()
-            syncWindowPreferences()
-        }
-        .onChange(of: settings.windowOpacity) { _, _ in
-            syncWindowPreferences()
-        }
-        .onChange(of: settings.hideToolbarInFullScreen) { _, _ in
             syncWindowPreferences()
         }
         .onChange(of: settings.displayTone) { _, _ in
@@ -154,8 +150,6 @@ struct DisplayView: View {
 
     private func syncWindowPreferences() {
         windowChrome.applyDisplayPreferences(
-            opacity: settings.windowOpacity,
-            hideToolbarInFullScreen: settings.hideToolbarInFullScreen,
             backdropColor: windowBackdropColor
         )
     }

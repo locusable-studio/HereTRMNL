@@ -46,6 +46,7 @@ struct HereTRMNLApp: App {
     var body: some Scene {
         MenuBarExtra("HereTRMNL", systemImage: "photo.on.rectangle") {
             StatusMenuView(updater: updaterController.updater)
+                .environmentObject(settings)
         }
 
         Window("HereTRMNL", id: "display") {
@@ -61,6 +62,7 @@ struct HereTRMNLApp: App {
         .defaultLaunchBehavior(.presented)
         .windowStyle(.hiddenTitleBar)
         .windowToolbarStyle(.unified)
+        .windowBackgroundDragBehavior(.enabled)
         .defaultSize(
             width: windowChrome.contentSize.width,
             height: windowChrome.contentSize.height
@@ -98,11 +100,11 @@ struct HereTRMNLApp: App {
         }
 
         Settings {
-            SettingsView(updater: updaterController.updater)
+            SettingsView()
                 .environmentObject(displaySession)
                 .environmentObject(settings)
         }
         .windowResizability(.contentSize)
-        .defaultSize(width: 540, height: 560)
+        .defaultSize(width: 540, height: 420)
     }
 }

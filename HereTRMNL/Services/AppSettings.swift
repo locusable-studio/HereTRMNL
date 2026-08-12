@@ -11,8 +11,6 @@ final class AppSettings: ObservableObject {
         static let lastContentWidth = "lastContentWidth"
         static let lastContentHeight = "lastContentHeight"
         static let displayTone = "displayTone"
-        static let windowOpacity = "windowOpacity"
-        static let hideToolbarInFullScreen = "hideToolbarInFullScreen"
     }
 
     /// Committed server base URL string (persisted).
@@ -25,22 +23,6 @@ final class AppSettings: ObservableObject {
 
     @Published var displayTone: DisplayTone {
         didSet { UserDefaults.standard.set(displayTone.rawValue, forKey: Keys.displayTone) }
-    }
-
-    /// 0.2 ... 1.0
-    @Published var windowOpacity: Double {
-        didSet {
-            let clamped = Self.clampOpacity(windowOpacity)
-            if clamped != windowOpacity {
-                windowOpacity = clamped
-                return
-            }
-            UserDefaults.standard.set(clamped, forKey: Keys.windowOpacity)
-        }
-    }
-
-    @Published var hideToolbarInFullScreen: Bool {
-        didSet { UserDefaults.standard.set(hideToolbarInFullScreen, forKey: Keys.hideToolbarInFullScreen) }
     }
 
     @Published var launchAtLoginEnabled: Bool
@@ -89,9 +71,6 @@ final class AppSettings: ObservableObject {
             displayTone = .automatic
         }
 
-        let storedOpacity = UserDefaults.standard.object(forKey: Keys.windowOpacity) as? Double
-        windowOpacity = Self.clampOpacity(storedOpacity ?? 1.0)
-        hideToolbarInFullScreen = UserDefaults.standard.object(forKey: Keys.hideToolbarInFullScreen) as? Bool ?? true
         launchAtLoginEnabled = LaunchAtLogin.isEnabled
     }
 
@@ -151,9 +130,5 @@ final class AppSettings: ObservableObject {
             return url
         }
         return URL(string: "https://\(trimmed)")
-    }
-
-    private static func clampOpacity(_ value: Double) -> Double {
-        min(max(value, 0.2), 1.0)
     }
 }

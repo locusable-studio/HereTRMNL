@@ -14,10 +14,7 @@ final class WindowChromeController: ObservableObject {
 
     private weak var window: NSWindow?
     private var didAttach = false
-    private var isFullScreen = false
     private var isKeyWindow = true
-    private var opacity: Double = 1.0
-    private var hideToolbarInFullScreen = true
     private var backdropColor: NSColor = .windowBackgroundColor
     private var observers: [NSObjectProtocol] = []
     private var attachGeneration = 0
@@ -43,17 +40,11 @@ final class WindowChromeController: ObservableObject {
     }
 
     func applyDisplayPreferences(
-        opacity: Double,
-        hideToolbarInFullScreen: Bool,
         backdropColor: NSColor
     ) {
-        self.opacity = opacity
-        self.hideToolbarInFullScreen = hideToolbarInFullScreen
         self.backdropColor = backdropColor
         DispatchQueue.main.async { [weak self] in
             self?.applyBackdrop()
-            self?.applyOpacity()
-            self?.applyChromeVisibility()
         }
     }
 
@@ -119,11 +110,9 @@ final class WindowChromeController: ObservableObject {
             didAttach = true
         }
 
-        isFullScreen = window.styleMask.contains(.fullScreen)
         isKeyWindow = window.isKeyWindow
         applyPin()
         applyBackdrop()
-        applyOpacity()
         applyChromeVisibility()
         applyAspectRatio(resize: false)
     }
@@ -135,7 +124,6 @@ final class WindowChromeController: ObservableObject {
         window.titlebarAppearsTransparent = true
         window.titlebarSeparatorStyle = .none
         window.styleMask.insert(.fullSizeContentView)
-        window.isMovableByWindowBackground = true
         hideTrafficLights()
         applyBackdrop()
     }
@@ -148,10 +136,6 @@ final class WindowChromeController: ObservableObject {
         window?.level = isPinned ? .floating : .normal
     }
 
-    private func applyOpacity() {
-        window?.alphaValue = CGFloat(opacity)
-    }
-
     private func hideTrafficLights() {
         guard let window else { return }
         for buttonType: NSWindow.ButtonType in [.closeButton, .miniaturizeButton, .zoomButton] {
@@ -159,14 +143,13 @@ final class WindowChromeController: ObservableObject {
         }
     }
 
-    /// Hide toolbar when the window is not key; also honor fullscreen toolbar pref.
+    /// Hide toolbar when the window is not key.
     private func applyChromeVisibility() {
         guard let window else { return }
 
         hideTrafficLights()
 
-        let hideToolbar = !isKeyWindow || (hideToolbarInFullScreen && isFullScreen)
-        let toolbarVisible = !hideToolbar
+        let toolbarVisible = isKeyWindow
         if window.toolbar?.isVisible != toolbarVisible {
             window.toolbar?.isVisible = toolbarVisible
         }
@@ -179,28 +162,6 @@ final class WindowChromeController: ObservableObject {
         observers.removeAll()
 
         let center = NotificationCenter.default
-        observers.append(center.addObserver(
-            forName: NSWindow.didEnterFullScreenNotification,
-            object: window,
-            queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in
-                guard let self else { return }
-                self.isFullScreen = true
-                self.applyChromeVisibility()
-            }
-        })
-        observers.append(center.addObserver(
-            forName: NSWindow.didExitFullScreenNotification,
-            object: window,
-            queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in
-                guard let self else { return }
-                self.isFullScreen = false
-                self.applyChromeVisibility()
-            }
-        })
         observers.append(center.addObserver(
             forName: NSWindow.didBecomeKeyNotification,
             object: window,

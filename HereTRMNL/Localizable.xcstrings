@@ -596,40 +596,6 @@
         }
       }
     },
-    "Hide Toolbar in Full Screen" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hide Toolbar in Full Screen"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "全屏时隐藏工具栏"
-          }
-        }
-      }
-    },
-    "Hide Toolbar in Full Screen:" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hide Toolbar in Full Screen:"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "全屏时隐藏工具栏："
-          }
-        }
-      }
-    },
     "HTTP %lld." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -799,40 +765,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "好"
-          }
-        }
-      }
-    },
-    "Opacity" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opacity"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "不透明度"
-          }
-        }
-      }
-    },
-    "Opacity:" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opacity:"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "不透明度："
           }
         }
       }
@@ -1143,19 +1075,19 @@
         }
       }
     },
-    "Settings…" : {
+    "Connection Settings…" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Settings…"
+            "value" : "Connection Settings…"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "设置…"
+            "value" : "连接配置…"
           }
         }
       }

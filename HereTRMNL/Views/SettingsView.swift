@@ -1,11 +1,8 @@
-@preconcurrency import Sparkle
 import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject private var session: DisplaySession
     @EnvironmentObject private var settings: AppSettings
-
-    private let updater: SPUUpdater
 
     @State private var isShowingConnectionSheet = false
     @State private var draftBaseURL = ""
@@ -13,10 +10,6 @@ struct SettingsView: View {
     @State private var draftAccessToken = ""
     @State private var isConnecting = false
     @State private var connectError: String?
-
-    init(updater: SPUUpdater) {
-        self.updater = updater
-    }
 
     var body: some View {
         Form {
@@ -40,57 +33,6 @@ struct SettingsView: View {
             } footer: {
                 Text(connectionFooter)
             }
-
-            Section {
-                Toggle(
-                    "Launch at Login",
-                    isOn: Binding(
-                        get: { settings.launchAtLoginEnabled },
-                        set: { settings.setLaunchAtLogin($0) }
-                    )
-                )
-
-                Picker("Display Tone", selection: $settings.displayTone) {
-                    ForEach(DisplayTone.allCases) { tone in
-                        Text(tone.title).tag(tone)
-                    }
-                }
-
-                LabeledContent("Opacity") {
-                    HStack(spacing: 12) {
-                        Slider(value: $settings.windowOpacity, in: 0.2...1.0, step: 0.05)
-                        Text(opacityLabel)
-                            .foregroundStyle(.secondary)
-                            .monospacedDigit()
-                            .frame(minWidth: 40, alignment: .trailing)
-                    }
-                }
-
-                Toggle("Hide Toolbar in Full Screen", isOn: $settings.hideToolbarInFullScreen)
-            } header: {
-                Text("Display")
-            } footer: {
-                Text("Display tone inverts the fetched screen for dark presentation. Automatic follows the system appearance.")
-            }
-
-            Section {
-                LabeledContent("Version") {
-                    Text(versionLabel)
-                        .foregroundStyle(.secondary)
-                        .monospacedDigit()
-                }
-
-                LabeledContent("Channel") {
-                    Text(UpdateChannel.displayName)
-                        .foregroundStyle(.secondary)
-                }
-
-                CheckForUpdatesView(updater: updater)
-
-                UpdaterSettingsView(updater: updater)
-            } header: {
-                Text("Updates")
-            }
         }
         .formStyle(.grouped)
         .frame(width: 540)
@@ -105,16 +47,7 @@ struct SettingsView: View {
         } message: {
             Text(connectError ?? "")
         }
-        .alert("Launch at Login", isPresented: Binding(
-            get: { settings.launchAtLoginError != nil },
-            set: { if !$0 { settings.launchAtLoginError = nil } }
-        )) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(settings.launchAtLoginError ?? "")
-        }
         .onAppear {
-            settings.refreshLaunchAtLoginStatus()
             if !settings.isConfigured {
                 openConnectionSheet(prefill: false)
             }
@@ -238,16 +171,6 @@ struct SettingsView: View {
         AppSettings.url(from: draftBaseURL) != nil
             && !draftDeviceID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && !draftAccessToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    private var opacityLabel: String {
-        "\(Int((settings.windowOpacity * 100).rounded()))%"
-    }
-
-    private var versionLabel: String {
-        let version = Bundle.main.releaseVersionNumber ?? "—"
-        let build = Bundle.main.buildVersionNumber ?? "—"
-        return "\(version) (\(build))"
     }
 
     private func openConnectionSheet(prefill: Bool) {
