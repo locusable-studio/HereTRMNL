@@ -4,7 +4,7 @@ struct SettingsView: View {
     @EnvironmentObject private var session: DisplaySession
     @EnvironmentObject private var settings: AppSettings
 
-    @State private var isShowingConnectionSheet = false
+    @State private var isEditing = false
     @State private var draftBaseURL = ""
     @State private var draftDeviceID = ""
     @State private var draftAccessToken = ""
@@ -13,134 +13,139 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section {
-                if settings.isConfigured {
-                    connectionSummary
-                } else {
-                    ContentUnavailableView {
-                        Label("Set Up Connection", systemImage: "link")
-                    } description: {
-                        Text("Add your LaraPaper server to start showing screens.")
-                    } actions: {
-                        Button("Connect…") {
-                            openConnectionSheet(prefill: false)
-                        }
-                        .keyboardShortcut(.defaultAction)
-                    }
-                }
-            } header: {
-                Text("Connection")
-            } footer: {
-                Text(connectionFooter)
+            if settings.isConfigured, !isEditing {
+                connectionSummary
+            } else {
+                connectionEditor
             }
         }
         .formStyle(.grouped)
         .frame(width: 540)
-        .sheet(isPresented: $isShowingConnectionSheet) {
-            connectionSheet
-        }
-        .alert("Could Not Connect", isPresented: Binding(
-            get: { connectError != nil },
-            set: { if !$0 { connectError = nil } }
-        )) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(connectError ?? "")
-        }
+        .navigationTitle("Connection Settings")
         .onAppear {
             if !settings.isConfigured {
-                openConnectionSheet(prefill: false)
+                prepareEditor(prefill: false)
             }
         }
     }
 
     @ViewBuilder
     private var connectionSummary: some View {
-        LabeledContent("Server") {
-            Text(settings.serverDisplayName)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .truncationMode(.middle)
-        }
+        Section {
+            LabeledContent("Server") {
+                Text(settings.serverDisplayName)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
 
-        LabeledContent("Device ID") {
-            Text(settings.deviceID)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .truncationMode(.middle)
-                .monospaced()
-        }
+            LabeledContent("Device ID") {
+                Text(settings.deviceID)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .monospaced()
+            }
 
-        LabeledContent("Access Token") {
-            Text("••••••••")
-                .foregroundStyle(.secondary)
-        }
+            LabeledContent("Access Token") {
+                Text("Saved")
+                    .foregroundStyle(.secondary)
+            }
 
-        LabeledContent("Status") {
-            Text(connectionStatusText)
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
-        }
+            LabeledContent("Status") {
+                Label(connectionStatusText, systemImage: connectionStatusIcon)
+                    .foregroundStyle(connectionStatusColor)
+                    .lineLimit(2)
+            }
 
-        Button("Edit Connection…") {
-            openConnectionSheet(prefill: true)
+            if let lastUpdated = session.lastUpdated {
+                LabeledContent("Last Updated") {
+                    Text(lastUpdated, style: .relative)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Button("Edit Connection…") {
+                prepareEditor(prefill: true)
+            }
+        } header: {
+            Text("Connection")
+        } footer: {
+            Text(connectionFooter)
         }
     }
 
-    private var connectionSheet: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    TextField(
-                        "Server URL",
-                        text: $draftBaseURL,
-                        prompt: Text("https://example.com")
-                    )
-                    .textContentType(.URL)
-                    .autocorrectionDisabled()
+    private var connectionEditor: some View {
+        Section {
+            TextField(
+                "Server URL",
+                text: $draftBaseURL,
+                prompt: Text("https://example.com")
+            )
+            .textContentType(.URL)
+            .autocorrectionDisabled()
+            .disabled(isConnecting)
 
-                    TextField(
-                        "Device ID",
-                        text: $draftDeviceID,
-                        prompt: Text("AA:BB:CC:DD:EE:FF")
-                    )
-                    .autocorrectionDisabled()
+            TextField(
+                "Device ID",
+                text: $draftDeviceID,
+                prompt: Text("AA:BB:CC:DD:EE:FF")
+            )
+            .autocorrectionDisabled()
+            .disabled(isConnecting)
 
-                    SecureField(
-                        "Access Token",
-                        text: $draftAccessToken
-                    )
-                } footer: {
-                    Text("Credentials are verified with the server before they are saved. Uses official TRMNL headers ID and Access-Token.")
-                }
+            SecureField(
+                "Access Token",
+                text: $draftAccessToken,
+                prompt: Text(settings.isConfigured
+                    ? String(localized: "Leave blank to keep saved token")
+                    : String(localized: "Required"))
+            )
+            .disabled(isConnecting)
+
+            if let connectError {
+                Label(connectError, systemImage: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.red)
+                    .font(.callout)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .formStyle(.grouped)
-            .navigationTitle(settings.isConfigured ? "Edit Connection" : "Connect")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+
+            HStack {
+                if settings.isConfigured {
                     Button("Cancel") {
-                        isShowingConnectionSheet = false
+                        isEditing = false
                         connectError = nil
                     }
                     .disabled(isConnecting)
                 }
 
-                ToolbarItem(placement: .confirmationAction) {
+                Spacer()
+
+                Button {
+                    Task { await connect() }
+                } label: {
                     if isConnecting {
-                        ProgressView()
-                            .controlSize(.small)
-                    } else {
-                        Button(settings.isConfigured ? "Save" : "Connect") {
-                            Task { await connect() }
+                        HStack(spacing: 6) {
+                            ProgressView()
+                                .controlSize(.small)
+                            Text("Verifying…")
                         }
-                        .keyboardShortcut(.defaultAction)
-                        .disabled(!draftLooksComplete)
+                    } else {
+                        Text(settings.isConfigured
+                            ? String(localized: "Verify and Save")
+                            : String(localized: "Connect"))
                     }
                 }
+                .keyboardShortcut(.defaultAction)
+                .disabled(!draftLooksComplete || isConnecting)
             }
+        } header: {
+            Text(settings.isConfigured
+                ? String(localized: "Edit Connection")
+                : String(localized: "Set Up Connection"))
+        } footer: {
+            Text("Credentials are verified before saving. The access token is stored securely in Keychain.")
         }
-        .frame(width: 420, height: 280)
-        .interactiveDismissDisabled(isConnecting)
     }
 
     private var connectionFooter: String {
@@ -167,24 +172,48 @@ struct SettingsView: View {
         }
     }
 
+    private var connectionStatusIcon: String {
+        switch session.phase {
+        case .ready:
+            "checkmark.circle.fill"
+        case .loading:
+            "arrow.trianglehead.2.clockwise.rotate.90"
+        case .failed:
+            "exclamationmark.triangle.fill"
+        case .idle:
+            "circle"
+        }
+    }
+
+    private var connectionStatusColor: Color {
+        switch session.phase {
+        case .ready:
+            .green
+        case .failed:
+            .orange
+        case .loading, .idle:
+            .secondary
+        }
+    }
+
     private var draftLooksComplete: Bool {
         AppSettings.url(from: draftBaseURL) != nil
             && !draftDeviceID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            && !draftAccessToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && (settings.isConfigured
+                || !draftAccessToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     }
 
-    private func openConnectionSheet(prefill: Bool) {
+    private func prepareEditor(prefill: Bool) {
         if prefill {
             draftBaseURL = settings.baseURLString
             draftDeviceID = settings.deviceID
-            draftAccessToken = settings.accessToken
         } else {
             draftBaseURL = ""
             draftDeviceID = ""
-            draftAccessToken = ""
         }
+        draftAccessToken = ""
         connectError = nil
-        isShowingConnectionSheet = true
+        isEditing = true
     }
 
     private func connect() async {
@@ -194,7 +223,8 @@ struct SettingsView: View {
 
         let trimmedURL = draftBaseURL.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedID = draftDeviceID.trimmingCharacters(in: .whitespacesAndNewlines)
-        let trimmedToken = draftAccessToken.trimmingCharacters(in: .whitespacesAndNewlines)
+        let newToken = draftAccessToken.trimmingCharacters(in: .whitespacesAndNewlines)
+        let token = newToken.isEmpty ? settings.accessToken : newToken
 
         guard let baseURL = AppSettings.url(from: trimmedURL) else {
             connectError = String(localized: "Server URL is invalid.")
@@ -205,7 +235,7 @@ struct SettingsView: View {
             try await session.verifyConnection(
                 baseURL: baseURL,
                 deviceID: trimmedID,
-                accessToken: trimmedToken
+                accessToken: token
             )
         } catch {
             connectError = error.localizedDescription
@@ -215,14 +245,15 @@ struct SettingsView: View {
         guard settings.applyCredentials(
             baseURLString: trimmedURL,
             deviceID: trimmedID,
-            accessToken: trimmedToken
+            accessToken: token
         ) else {
             connectError = settings.lastKeychainError
                 ?? String(localized: "Unknown Keychain error.")
             return
         }
 
-        isShowingConnectionSheet = false
+        isEditing = false
+        draftAccessToken = ""
         session.reloadConfiguration()
     }
 }

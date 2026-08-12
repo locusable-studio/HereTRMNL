@@ -47,6 +47,7 @@ struct HereTRMNLApp: App {
         MenuBarExtra("HereTRMNL", systemImage: "photo.on.rectangle") {
             StatusMenuView(updater: updaterController.updater)
                 .environmentObject(settings)
+                .environmentObject(displaySession)
         }
 
         Window("HereTRMNL", id: "display") {
