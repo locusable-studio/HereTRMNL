@@ -5,6 +5,7 @@ import SwiftUI
 struct StatusMenuView: View {
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var session: DisplaySession
+    @EnvironmentObject private var windowChrome: WindowChromeController
     @Environment(\.openSettings) private var openSettings
     private let updater: SPUUpdater
 
@@ -22,6 +23,36 @@ struct StatusMenuView: View {
                 NSApp.activate(ignoringOtherApps: true)
             }
             .keyboardShortcut(",")
+
+            Divider()
+
+            Button("Refresh Now") {
+                Task { await session.refresh(manual: true) }
+            }
+            .keyboardShortcut("r")
+            .disabled(!settings.isConfigured || session.isRefreshing)
+
+            Divider()
+
+            Section(String(localized: "Placement")) {
+                Picker(String(localized: "Screen"), selection: screenSelection) {
+                    ForEach(attachedScreens, id: \.id) { screen in
+                        Text(screen.name).tag(screen.id)
+                    }
+                }
+
+                Picker(String(localized: "Position"), selection: positionSelection) {
+                    ForEach(WindowPosition.allCases) { position in
+                        if let symbol = position.systemImage {
+                            Label(position.title, systemImage: symbol)
+                                .tag(position)
+                        } else {
+                            Text(position.title)
+                                .tag(position)
+                        }
+                    }
+                }
+            }
 
             Divider()
 
@@ -58,7 +89,7 @@ struct StatusMenuView: View {
                 AboutWindowController.shared.openAbout()
             }
 
-            Button("Quit HereTRMNL") {
+            Button("Quit") {
                 NSApplication.shared.terminate(nil)
             }
             .keyboardShortcut("q")
@@ -74,6 +105,49 @@ struct StatusMenuView: View {
         .onAppear {
             settings.refreshLaunchAtLoginStatus()
         }
+    }
+
+    private struct ScreenOption: Identifiable {
+        let id: CGDirectDisplayID
+        let name: String
+    }
+
+    private var attachedScreens: [ScreenOption] {
+        NSScreen.screens.enumerated().map { index, screen in
+            ScreenOption(
+                id: DisplayScreen.displayID(of: screen),
+                name: DisplayScreen.localizedName(for: screen, index: index)
+            )
+        }
+    }
+
+    private var screenSelection: Binding<CGDirectDisplayID> {
+        Binding(
+            get: {
+                let preferred = settings.preferredScreenID
+                if preferred != 0, DisplayScreen.screen(forDisplayID: preferred) != nil {
+                    return preferred
+                }
+                if let resolved = DisplayScreen.resolve(preferredID: preferred) {
+                    return DisplayScreen.displayID(of: resolved)
+                }
+                return attachedScreens.first?.id ?? 0
+            },
+            set: { newValue in
+                settings.preferredScreenID = newValue
+                windowChrome.applyPlacement()
+            }
+        )
+    }
+
+    private var positionSelection: Binding<WindowPosition> {
+        Binding(
+            get: { settings.windowPosition },
+            set: { newValue in
+                settings.windowPosition = newValue
+                windowChrome.applyPlacement()
+            }
+        )
     }
 
     private var connectionStatusText: String {

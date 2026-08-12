@@ -30,7 +30,10 @@ struct HereTRMNLApp: App {
         } else {
             initialSize = WindowChromeController.defaultContentSize
         }
-        _windowChrome = StateObject(wrappedValue: WindowChromeController(initialContentSize: initialSize))
+        _windowChrome = StateObject(wrappedValue: WindowChromeController(
+            initialContentSize: initialSize,
+            settings: settings
+        ))
 
         // Start polling as soon as the app launches — don't wait for the first view pass.
         if !AppRuntime.isRunningTests {
@@ -48,6 +51,7 @@ struct HereTRMNLApp: App {
             StatusMenuView(updater: updaterController.updater)
                 .environmentObject(settings)
                 .environmentObject(displaySession)
+                .environmentObject(windowChrome)
         }
 
         Window("HereTRMNL", id: "display") {
@@ -63,7 +67,8 @@ struct HereTRMNLApp: App {
         .defaultLaunchBehavior(.presented)
         .windowStyle(.hiddenTitleBar)
         .windowToolbarStyle(.unified)
-        .windowBackgroundDragBehavior(.enabled)
+        .windowBackgroundDragBehavior(.disabled)
+        .windowResizability(.contentSize)
         .defaultSize(
             width: windowChrome.contentSize.width,
             height: windowChrome.contentSize.height
@@ -80,20 +85,10 @@ struct HereTRMNLApp: App {
                 }
                 .keyboardShortcut("r", modifiers: [.command])
                 .disabled(!settings.isConfigured || displaySession.isRefreshing)
-
-                Button(windowChrome.isPinned ? "Unpin" : "Keep on Top") {
-                    windowChrome.isPinned.toggle()
-                }
-                .keyboardShortcut("t", modifiers: [.command])
-
-                Button("Standard Size") {
-                    windowChrome.restoreStandardSize()
-                }
-                .keyboardShortcut("0", modifiers: [.command])
             }
 
             CommandMenu("Options") {
-                Button("Quit HereTRMNL") {
+                Button("Quit") {
                     NSApplication.shared.terminate(nil)
                 }
                 .keyboardShortcut("q", modifiers: [.command])
@@ -106,6 +101,5 @@ struct HereTRMNLApp: App {
                 .environmentObject(settings)
         }
         .windowResizability(.contentSize)
-        .defaultSize(width: 540, height: 420)
     }
 }

@@ -5,7 +5,6 @@ struct DisplayView: View {
     @EnvironmentObject private var session: DisplaySession
     @EnvironmentObject private var windowChrome: WindowChromeController
     @EnvironmentObject private var settings: AppSettings
-    @Environment(\.openSettings) private var openSettings
     @Environment(\.colorScheme) private var colorScheme
 
     private var shouldInvertImage: Bool {
@@ -42,9 +41,9 @@ struct DisplayView: View {
                 } description: {
                     Text(message)
                 } actions: {
-                    Button("Open Settings") {
-                        openSettings()
-                    }
+                    Text("Use Connection Settings in the menu bar.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
                 }
             } else if let image = session.image {
                 // Keep the last frame visible even when a later refresh fails.
@@ -54,17 +53,15 @@ struct DisplayView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .modifier(DisplayToneModifier(invert: shouldInvertImage))
                     .accessibilityLabel(session.filename ?? String(localized: "Display image"))
-                    .gesture(WindowDragGesture())
-                    .allowsWindowActivationEvents()
             } else if case .failed(let message) = session.phase {
                 ContentUnavailableView {
                     Label("Unable to Load Display", systemImage: "exclamationmark.triangle")
                 } description: {
                     Text(message)
                 } actions: {
-                    Button("Try Again") {
-                        Task { await session.refresh(manual: true) }
-                    }
+                    Text("Use Refresh Now in the menu bar.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
                 }
             } else if settings.isConfigured || session.phase == .loading {
                 ProgressView()
@@ -74,9 +71,9 @@ struct DisplayView: View {
                 } description: {
                     Text("Connect a LaraPaper server in Settings to show the next screen.")
                 } actions: {
-                    Button("Open Settings") {
-                        openSettings()
-                    }
+                    Text("Use Connection Settings in the menu bar.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -86,7 +83,7 @@ struct DisplayView: View {
         .ignoresSafeArea()
         .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
         .task {
-            syncAspectRatio()
+            syncDeviceSize()
             syncWindowPreferences()
         }
         .onChange(of: settings.displayTone) { _, _ in
@@ -97,54 +94,30 @@ struct DisplayView: View {
         }
         .onChange(of: session.deviceContentSize) { _, size in
             if let size {
-                windowChrome.lockAspect(to: NSSize(width: size.width, height: size.height))
+                windowChrome.setDeviceContentSize(NSSize(width: size.width, height: size.height))
             }
         }
         .onChange(of: session.image) { _, image in
             syncWindowPreferences()
             if let image {
-                windowChrome.lockAspect(to: image)
-            }
-        }
-        .toolbar {
-            ToolbarSpacer(.flexible)
-
-            ToolbarItemGroup(placement: .confirmationAction) {
-                Button(
-                    windowChrome.isPinned ? "Unpin" : "Pin",
-                    systemImage: windowChrome.isPinned ? "pin.fill" : "pin"
-                ) {
-                    windowChrome.isPinned.toggle()
-                }
-
-                Button("Standard Size", systemImage: "rectangle.center.inset.filled") {
-                    windowChrome.restoreStandardSize()
-                }
-                .help("Restore the window to the device screen size")
-
-                Button {
-                    Task { await session.refresh(manual: true) }
-                } label: {
-                    if session.isRefreshing {
-                        ProgressView()
-                            .controlSize(.small)
-                    } else {
-                        Label("Refresh", systemImage: "arrow.clockwise")
-                    }
-                }
-                .disabled(!settings.isConfigured || session.isRefreshing)
-                .help("Refresh")
+                windowChrome.setDeviceContentSize(from: image)
             }
         }
     }
 
-    private func syncAspectRatio() {
+    private func syncDeviceSize() {
         if let size = session.deviceContentSize {
-            windowChrome.lockAspect(to: NSSize(width: size.width, height: size.height))
+            windowChrome.setDeviceContentSize(
+                NSSize(width: size.width, height: size.height),
+                animated: false
+            )
         } else if let image = session.image {
-            windowChrome.lockAspect(to: image)
+            windowChrome.setDeviceContentSize(from: image, animated: false)
         } else {
-            windowChrome.lockAspect(to: WindowChromeController.defaultContentSize)
+            windowChrome.setDeviceContentSize(
+                WindowChromeController.defaultContentSize,
+                animated: false
+            )
         }
     }
 

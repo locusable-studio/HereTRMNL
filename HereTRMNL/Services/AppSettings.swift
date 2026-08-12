@@ -12,6 +12,8 @@ final class AppSettings: ObservableObject {
         static let lastContentWidth = "lastContentWidth"
         static let lastContentHeight = "lastContentHeight"
         static let displayTone = "displayTone"
+        static let windowPosition = "windowPosition"
+        static let preferredScreenID = "preferredScreenID"
     }
 
     /// Committed server base URL string (persisted).
@@ -23,6 +25,15 @@ final class AppSettings: ObservableObject {
 
     @Published var displayTone: DisplayTone {
         didSet { UserDefaults.standard.set(displayTone.rawValue, forKey: Keys.displayTone) }
+    }
+
+    @Published var windowPosition: WindowPosition {
+        didSet { UserDefaults.standard.set(windowPosition.rawValue, forKey: Keys.windowPosition) }
+    }
+
+    /// `CGDirectDisplayID` of the preferred screen; `0` means primary (menu bar) display.
+    @Published var preferredScreenID: CGDirectDisplayID {
+        didSet { UserDefaults.standard.set(Int(preferredScreenID), forKey: Keys.preferredScreenID) }
     }
 
     @Published var launchAtLoginEnabled: Bool
@@ -70,6 +81,16 @@ final class AppSettings: ObservableObject {
         } else {
             displayTone = .automatic
         }
+
+        if let raw = UserDefaults.standard.string(forKey: Keys.windowPosition),
+           let position = WindowPosition(rawValue: raw) {
+            windowPosition = position
+        } else {
+            windowPosition = .topRight
+        }
+
+        let storedScreenID = UserDefaults.standard.integer(forKey: Keys.preferredScreenID)
+        preferredScreenID = storedScreenID > 0 ? CGDirectDisplayID(storedScreenID) : 0
 
         launchAtLoginEnabled = LaunchAtLogin.isEnabled
     }

@@ -6,20 +6,20 @@ final class WindowChromeController: ObservableObject {
     /// TRMNL OG default; overridden by last remembered device size when available.
     static let defaultContentSize = NSSize(width: 800, height: 480)
 
-    @Published var isPinned = false {
-        didSet { applyPin() }
-    }
+    /// Margin from the chosen display's visible edges.
+    static let screenEdgeMargin: CGFloat = 24
 
     @Published private(set) var contentSize: NSSize
 
+    private let settings: AppSettings
     private weak var window: NSWindow?
     private var didAttach = false
-    private var isKeyWindow = true
     private var backdropColor: NSColor = .windowBackgroundColor
     private var observers: [NSObjectProtocol] = []
     private var attachGeneration = 0
 
-    init(initialContentSize: NSSize? = nil) {
+    init(initialContentSize: NSSize? = nil, settings: AppSettings = .shared) {
+        self.settings = settings
         if let initialContentSize, initialContentSize.width > 0, initialContentSize.height > 0 {
             contentSize = initialContentSize
         } else {
@@ -39,16 +39,15 @@ final class WindowChromeController: ObservableObject {
         }
     }
 
-    func applyDisplayPreferences(
-        backdropColor: NSColor
-    ) {
+    func applyDisplayPreferences(backdropColor: NSColor) {
         self.backdropColor = backdropColor
         DispatchQueue.main.async { [weak self] in
             self?.applyBackdrop()
         }
     }
 
-    func lockAspect(to size: NSSize) {
+    /// Keep the window content size equal to the device pixel size.
+    func setDeviceContentSize(_ size: NSSize, animated: Bool = true) {
         guard size.width > 0, size.height > 0 else { return }
         let changed = abs(contentSize.width - size.width) > 0.5
             || abs(contentSize.height - size.height) > 0.5
@@ -58,47 +57,21 @@ final class WindowChromeController: ObservableObject {
             if changed {
                 self.contentSize = size
             }
-            self.applyAspectRatio(resize: changed)
+            self.applyContentFrame(animated: animated && changed)
         }
     }
 
-    func lockAspect(to image: NSImage) {
-        lockAspect(to: image.devicePixelSize)
+    func setDeviceContentSize(from image: NSImage, animated: Bool = true) {
+        setDeviceContentSize(image.devicePixelSize, animated: animated)
     }
 
-    /// Resize the window so its content area is exactly the device pixel size (points).
-    func restoreStandardSize() {
+    /// Reposition using current `AppSettings` screen and corner.
+    func applyPlacement(animated: Bool = true) {
         guard let window else { return }
-
-        let target = contentSize
-        window.contentAspectRatio = target
-        window.aspectRatio = target
-        window.contentMinSize = NSSize(
-            width: max(320, target.width * 0.4),
-            height: max(192, target.height * 0.4)
-        )
-
-        let contentRect = NSRect(origin: .zero, size: target)
-        var newFrame = window.frameRect(forContentRect: contentRect)
-
-        let midX = window.frame.midX
-        let midY = window.frame.midY
-        newFrame.origin.x = midX - newFrame.width / 2
-        newFrame.origin.y = midY - newFrame.height / 2
-
-        if let screen = window.screen ?? NSScreen.main {
-            let visible = screen.visibleFrame
-            newFrame.origin.x = min(
-                max(newFrame.origin.x, visible.minX),
-                max(visible.minX, visible.maxX - newFrame.width)
-            )
-            newFrame.origin.y = min(
-                max(newFrame.origin.y, visible.minY),
-                max(visible.minY, visible.maxY - newFrame.height)
-            )
-        }
-
-        window.setFrame(newFrame, display: true, animate: true)
+        var frame = window.frame
+        guard let origin = placementOrigin(for: frame.size) else { return }
+        frame.origin = origin
+        window.setFrame(frame, display: true, animate: animated)
     }
 
     private func finishAttach(to window: NSWindow) {
@@ -110,11 +83,9 @@ final class WindowChromeController: ObservableObject {
             didAttach = true
         }
 
-        isKeyWindow = window.isKeyWindow
-        applyPin()
+        applyDesktopBehavior()
         applyBackdrop()
-        applyChromeVisibility()
-        applyAspectRatio(resize: false)
+        applyContentFrame(animated: false)
     }
 
     private func applyChrome() {
@@ -124,34 +95,40 @@ final class WindowChromeController: ObservableObject {
         window.titlebarAppearsTransparent = true
         window.titlebarSeparatorStyle = .none
         window.styleMask.insert(.fullSizeContentView)
+        window.styleMask.remove(.resizable)
+        window.isMovable = false
+        window.isMovableByWindowBackground = false
+        window.hasShadow = false
+        window.animationBehavior = .none
         hideTrafficLights()
         applyBackdrop()
+    }
+
+    private func applyDesktopBehavior() {
+        guard let window else { return }
+
+        // Above wallpaper, below Finder desktop icons.
+        window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desktopIconWindow)) - 1)
+        window.collectionBehavior = [
+            .canJoinAllSpaces,
+            .stationary,
+            .ignoresCycle,
+            .fullScreenAuxiliary,
+        ]
+        window.ignoresMouseEvents = true
+        window.hidesOnDeactivate = false
+        hideTrafficLights()
+        window.toolbar?.isVisible = false
     }
 
     private func applyBackdrop() {
         window?.backgroundColor = backdropColor
     }
 
-    private func applyPin() {
-        window?.level = isPinned ? .floating : .normal
-    }
-
     private func hideTrafficLights() {
         guard let window else { return }
         for buttonType: NSWindow.ButtonType in [.closeButton, .miniaturizeButton, .zoomButton] {
             window.standardWindowButton(buttonType)?.isHidden = true
-        }
-    }
-
-    /// Hide toolbar when the window is not key.
-    private func applyChromeVisibility() {
-        guard let window else { return }
-
-        hideTrafficLights()
-
-        let toolbarVisible = isKeyWindow
-        if window.toolbar?.isVisible != toolbarVisible {
-            window.toolbar?.isVisible = toolbarVisible
         }
     }
 
@@ -163,14 +140,21 @@ final class WindowChromeController: ObservableObject {
 
         let center = NotificationCenter.default
         observers.append(center.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.applyPlacement(animated: false)
+            }
+        })
+        observers.append(center.addObserver(
             forName: NSWindow.didBecomeKeyNotification,
             object: window,
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                guard let self else { return }
-                self.isKeyWindow = true
-                self.applyChromeVisibility()
+                self?.applyDesktopBehavior()
             }
         })
         observers.append(center.addObserver(
@@ -179,26 +163,31 @@ final class WindowChromeController: ObservableObject {
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                guard let self else { return }
-                self.isKeyWindow = false
-                self.applyChromeVisibility()
+                self?.applyDesktopBehavior()
             }
         })
     }
 
-    private func applyAspectRatio(resize: Bool) {
+    private func applyContentFrame(animated: Bool) {
         guard let window else { return }
 
-        let size = contentSize
-        window.contentAspectRatio = size
-        window.aspectRatio = size
-        window.contentMinSize = NSSize(
-            width: max(320, size.width * 0.4),
-            height: max(192, size.height * 0.4)
-        )
+        let contentRect = NSRect(origin: .zero, size: contentSize)
+        var newFrame = window.frameRect(forContentRect: contentRect)
+        if let origin = placementOrigin(for: newFrame.size) {
+            newFrame.origin = origin
+        }
+        window.setFrame(newFrame, display: true, animate: animated)
+    }
 
-        guard resize else { return }
-        restoreStandardSize()
+    private func placementOrigin(for size: NSSize) -> NSPoint? {
+        guard let screen = DisplayScreen.resolve(preferredID: settings.preferredScreenID) else {
+            return nil
+        }
+        return settings.windowPosition.origin(
+            for: size,
+            in: screen.visibleFrame,
+            margin: Self.screenEdgeMargin
+        )
     }
 }
 
