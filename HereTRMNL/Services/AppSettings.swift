@@ -14,7 +14,6 @@ final class AppSettings: ObservableObject {
         static let lastContentHeight = "lastContentHeight"
         static let windowPosition = "windowPosition"
         static let preferredScreenID = "preferredScreenID"
-        static let showOnAllSpaces = "showOnAllSpaces"
 
         static func windowPosition(forScreenID id: CGDirectDisplayID) -> String {
             "windowPosition_\(id)"
@@ -33,11 +32,6 @@ final class AppSettings: ObservableObject {
     /// `CGDirectDisplayID` of the preferred screen; `0` means primary (menu bar) display.
     /// Kept even if that display is temporarily unavailable so reconnect can restore it.
     @Published private(set) var preferredScreenID: CGDirectDisplayID
-
-    /// When true, the display window joins every Space (Sidefy-compatible default).
-    @Published var showOnAllSpaces: Bool {
-        didSet { defaults.set(showOnAllSpaces, forKey: Keys.showOnAllSpaces) }
-    }
 
     @Published var launchAtLoginEnabled: Bool
     @Published var launchAtLoginError: String?
@@ -89,12 +83,6 @@ final class AppSettings: ObservableObject {
 
         let storedScreenID = defaults.integer(forKey: Keys.preferredScreenID)
         preferredScreenID = storedScreenID > 0 ? CGDirectDisplayID(storedScreenID) : 0
-
-        if defaults.object(forKey: Keys.showOnAllSpaces) == nil {
-            showOnAllSpaces = true
-        } else {
-            showOnAllSpaces = defaults.bool(forKey: Keys.showOnAllSpaces)
-        }
 
         launchAtLoginEnabled = LaunchAtLogin.isEnabled
     }

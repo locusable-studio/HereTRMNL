@@ -75,11 +75,6 @@ final class WindowChromeController: ObservableObject {
         applyContentFrame(animated: animated)
     }
 
-    /// Refresh Space joining from `showOnAllSpaces`.
-    func applyCollectionBehavior() {
-        applyDesktopBehavior()
-    }
-
     private func finishAttach(to window: NSWindow) {
         guard self.window === window else { return }
 
@@ -118,15 +113,12 @@ final class WindowChromeController: ObservableObject {
 
         // Above the wallpaper, below Finder desktop icons.
         window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desktopWindow)) + 1)
-        var behavior: NSWindow.CollectionBehavior = [
+        window.collectionBehavior = [
+            .canJoinAllSpaces,
             .stationary,
             .ignoresCycle,
             .fullScreenAuxiliary,
         ]
-        if settings.showOnAllSpaces {
-            behavior.insert(.canJoinAllSpaces)
-        }
-        window.collectionBehavior = behavior
         // Always click-through: this window never intercepts mouse input.
         window.ignoresMouseEvents = true
         window.hidesOnDeactivate = false

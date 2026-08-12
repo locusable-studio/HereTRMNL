@@ -64,9 +64,4 @@ struct DisplayManagementTests {
         #expect(defaults.integer(forKey: "preferredScreenID") == 55)
         #expect(settings.storedPosition(forScreenID: 55) == .topLeft)
     }
-
-    @Test func showOnAllSpacesDefaultsTrue() {
-        let (settings, _) = makeSettings()
-        #expect(settings.showOnAllSpaces == true)
-    }
 }

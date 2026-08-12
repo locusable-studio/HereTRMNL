@@ -46,17 +46,6 @@ struct StatusMenuView: View {
                         }
                     }
                 }
-
-                Toggle(
-                    String(localized: "Show on All Spaces"),
-                    isOn: Binding(
-                        get: { settings.showOnAllSpaces },
-                        set: { newValue in
-                            settings.showOnAllSpaces = newValue
-                            windowChrome.applyCollectionBehavior()
-                        }
-                    )
-                )
             }
 
             Divider()
