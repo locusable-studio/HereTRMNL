@@ -4,6 +4,18 @@
         <title>HereTRMNL</title>
         <item>
             <title>2026.8.12.1</title>
+            <pubDate>Wed, 12 Aug 2026 08:48:05 +0000</pubDate>
+            <sparkle:version>33</sparkle:version>
+            <sparkle:shortVersionString>2026.8.12.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/locusable-studio/HereTRMNL/releases/download/v2026.8.12.2/HereTRMNL-2026.8.12.2.dmg" length="1611014" type="application/octet-stream" sparkle:edSignature="7zPryEK5u7UhZ67NS39kJ9U1lgBh/jlbfZgjyE8Un739EGu5+Q0/6ETSoULh/Iy9NlyA8o0WcO8kbWULvlGCAA=="/>
+            <sparkle:deltas>
+                <enclosure url="https://github.com/locusable-studio/HereTRMNL/releases/download/v2026.8.12.2/HereTRMNL33-26.delta" sparkle:deltaFrom="26" length="122230" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="977808" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="VhcB/bhJgO+t5wPYElyr881JT4AC0KSHyAS++ZTnOLHLiu3lHWTMjKzyomUG9SDeXrZqXdOYlTpa9vKH67MqAw=="/>
+                <enclosure url="https://github.com/locusable-studio/HereTRMNL/releases/download/v2026.8.12.2/HereTRMNL33-21.delta" sparkle:deltaFrom="21" length="126354" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="977808" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="38RqO0OzsHUdm71+aLWGK7WuR4Rr9+VZf45gVypaKqWoGCk6yQQg3b2hkC4iwykVP6A5tBVf6l8rQk+Xv4OGCQ=="/>
+            </sparkle:deltas>
+        </item>
+        <item>
+            <title>2026.8.12.1</title>
             <pubDate>Wed, 12 Aug 2026 06:57:23 +0000</pubDate>
             <sparkle:version>26</sparkle:version>
             <sparkle:shortVersionString>2026.8.12.1</sparkle:shortVersionString>
