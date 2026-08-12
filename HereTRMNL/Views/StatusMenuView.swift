@@ -47,12 +47,6 @@ struct StatusMenuView: View {
                     }
                 }
 
-                Picker(String(localized: "Display Tone"), selection: $settings.displayTone) {
-                    ForEach(DisplayTone.allCases) { tone in
-                        Text(tone.title).tag(tone)
-                    }
-                }
-
                 Toggle(
                     String(localized: "Show on All Spaces"),
                     isOn: Binding(

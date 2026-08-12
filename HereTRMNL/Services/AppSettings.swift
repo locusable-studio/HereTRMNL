@@ -12,7 +12,6 @@ final class AppSettings: ObservableObject {
         static let accessToken = "accessToken"
         static let lastContentWidth = "lastContentWidth"
         static let lastContentHeight = "lastContentHeight"
-        static let displayTone = "displayTone"
         static let windowPosition = "windowPosition"
         static let preferredScreenID = "preferredScreenID"
         static let showOnAllSpaces = "showOnAllSpaces"
@@ -28,10 +27,6 @@ final class AppSettings: ObservableObject {
     @Published private(set) var deviceID: String
     /// Committed access token (persisted).
     @Published private(set) var accessToken: String
-
-    @Published var displayTone: DisplayTone {
-        didSet { defaults.set(displayTone.rawValue, forKey: Keys.displayTone) }
-    }
 
     @Published private(set) var windowPosition: WindowPosition
 
@@ -84,13 +79,6 @@ final class AppSettings: ObservableObject {
         self.baseURLString = baseURLString ?? defaults.string(forKey: Keys.baseURL) ?? ""
         self.deviceID = deviceID ?? defaults.string(forKey: Keys.deviceID) ?? ""
         self.accessToken = accessToken ?? defaults.string(forKey: Keys.accessToken) ?? ""
-
-        if let raw = defaults.string(forKey: Keys.displayTone),
-           let tone = DisplayTone(rawValue: raw) {
-            displayTone = tone
-        } else {
-            displayTone = .automatic
-        }
 
         if let raw = defaults.string(forKey: Keys.windowPosition),
            let position = WindowPosition(rawValue: raw) {

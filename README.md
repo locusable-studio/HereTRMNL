@@ -20,7 +20,7 @@ HereTRMNL turns this Mac into a LaraPaper display device:
 - Fixed device-sized layout; pick screen and corner (or center) from the menu bar
 - Polls the server display API, shows the current image, and refreshes on the server interval
 - Skips redraw when the image has not changed
-- Manual refresh, display tone (light / dark / automatic), and launch at login
+- Manual refresh and launch at login
 
 ## Download
 

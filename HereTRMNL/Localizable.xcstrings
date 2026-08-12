@@ -52,23 +52,6 @@
         }
       }
     },
-    "Automatic": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Automatic"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "自动"
-          }
-        }
-      }
-    },
     "Automatically check for updates": {
       "extractionState": "manual",
       "localizations": {
@@ -392,23 +375,6 @@
         }
       }
     },
-    "Dark": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dark"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "深色"
-          }
-        }
-      }
-    },
     "Device ID": {
       "extractionState": "manual",
       "localizations": {
@@ -473,23 +439,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "显示画面"
-          }
-        }
-      }
-    },
-    "Display Tone": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Display Tone"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "画面色调"
           }
         }
       }
@@ -677,23 +626,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "留空则保留已保存的令牌"
-          }
-        }
-      }
-    },
-    "Light": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Light"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "浅色"
           }
         }
       }
