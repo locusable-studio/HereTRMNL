@@ -24,7 +24,6 @@ A macOS menu bar app that mirrors your [LaraPaper](https://github.com/usetrmnl) 
 ## Build
 
 ```bash
-xcodegen generate
 open HereTRMNL.xcodeproj
 ```
 

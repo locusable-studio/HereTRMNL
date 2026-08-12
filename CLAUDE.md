@@ -6,9 +6,8 @@
 
 Before every code commit, increment `CURRENT_PROJECT_VERSION` (build number) by 1.
 
-- Source of truth: `project.yml`
-- Regenerate `HereTRMNL.xcodeproj` with XcodeGen after changing the build number
-- Keep Debug and Release values in sync
+- Location: `HereTRMNL.xcodeproj/project.pbxproj`
+- Bump both Debug and Release values in sync
 - Include the build number change in the same commit as the functional changes
 
 ## Release notes
