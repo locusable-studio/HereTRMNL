@@ -68,8 +68,8 @@ struct HereTRMNLApp: App {
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
         .defaultSize(
-            width: windowChrome.scaledContentSize.width,
-            height: windowChrome.scaledContentSize.height
+            width: windowChrome.contentSize.width,
+            height: windowChrome.contentSize.height
         )
         .commands {
             CommandGroup(replacing: .newItem) {}

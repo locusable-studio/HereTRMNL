@@ -47,12 +47,6 @@ struct StatusMenuView: View {
                     }
                 }
 
-                Picker(String(localized: "Size"), selection: sizeSelection) {
-                    ForEach(WindowDisplaySize.allCases) { size in
-                        Text(size.title).tag(size)
-                    }
-                }
-
                 Picker(String(localized: "Display Tone"), selection: $settings.displayTone) {
                     ForEach(DisplayTone.allCases) { tone in
                         Text(tone.title).tag(tone)
@@ -149,16 +143,6 @@ struct StatusMenuView: View {
             get: { settings.windowPosition },
             set: { newValue in
                 settings.windowPosition = newValue
-                windowChrome.applyPlacement()
-            }
-        )
-    }
-
-    private var sizeSelection: Binding<WindowDisplaySize> {
-        Binding(
-            get: { settings.windowDisplaySize },
-            set: { newValue in
-                settings.windowDisplaySize = newValue
                 windowChrome.applyPlacement()
             }
         )

@@ -11,15 +11,6 @@ final class WindowChromeController: ObservableObject {
 
     @Published private(set) var contentSize: NSSize
 
-    /// Device content size after the user-chosen display scale (original / half).
-    var scaledContentSize: NSSize {
-        let scale = settings.windowDisplaySize.scale
-        return NSSize(
-            width: contentSize.width * scale,
-            height: contentSize.height * scale
-        )
-    }
-
     private let settings: AppSettings
     private weak var window: NSWindow?
     private var didAttach = false
@@ -170,7 +161,7 @@ final class WindowChromeController: ObservableObject {
         let area = DisplayScreen.placementArea(for: screen)
         let margin = Self.screenEdgeMargin
         let fittedContent = WindowPosition.fittedSize(
-            for: scaledContentSize,
+            for: contentSize,
             in: area,
             margin: margin
         )

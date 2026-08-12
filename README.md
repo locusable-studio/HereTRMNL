@@ -10,7 +10,7 @@ A macOS menu bar app that mirrors your [LaraPaper](https://github.com/usetrmnl) 
 
 - Lives in the menu bar (no Dock icon)
 - Desktop-layer window: above wallpaper, below Finder icons; clicks pass through when a screen is showing
-- Fixed device-sized layout; choose display, corner (or center), and original / half size from the menu bar
+- Fixed device-sized layout; choose display and corner (or center) from the menu bar
 - Bottom / side placement clears the Dock; top placement stays clear of the menu bar
 - Polls `GET /api/display` with firmware-style `ID` and `Access-Token` headers
 - Shows `image_url` and refreshes on `refresh_rate`
