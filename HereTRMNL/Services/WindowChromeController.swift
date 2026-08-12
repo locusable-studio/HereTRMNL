@@ -47,7 +47,7 @@ final class WindowChromeController: ObservableObject {
     }
 
     /// Keep the window content size equal to the device pixel size.
-    func setDeviceContentSize(_ size: NSSize, animated: Bool = true) {
+    func setDeviceContentSize(_ size: NSSize, animated: Bool = false) {
         guard size.width > 0, size.height > 0 else { return }
         let changed = abs(contentSize.width - size.width) > 0.5
             || abs(contentSize.height - size.height) > 0.5
@@ -57,21 +57,18 @@ final class WindowChromeController: ObservableObject {
             if changed {
                 self.contentSize = size
             }
+            // Always re-apply from contentSize so origin stays consistent.
             self.applyContentFrame(animated: animated && changed)
         }
     }
 
-    func setDeviceContentSize(from image: NSImage, animated: Bool = true) {
+    func setDeviceContentSize(from image: NSImage, animated: Bool = false) {
         setDeviceContentSize(image.devicePixelSize, animated: animated)
     }
 
     /// Reposition using current `AppSettings` screen and corner.
-    func applyPlacement(animated: Bool = true) {
-        guard let window else { return }
-        var frame = window.frame
-        guard let origin = placementOrigin(for: frame.size) else { return }
-        frame.origin = origin
-        window.setFrame(frame, display: true, animate: animated)
+    func applyPlacement(animated: Bool = false) {
+        applyContentFrame(animated: animated)
     }
 
     private func finishAttach(to window: NSWindow) {
@@ -118,7 +115,7 @@ final class WindowChromeController: ObservableObject {
         window.ignoresMouseEvents = true
         window.hidesOnDeactivate = false
         hideTrafficLights()
-        window.toolbar?.isVisible = false
+        window.toolbar = nil
     }
 
     private func applyBackdrop() {
@@ -173,9 +170,12 @@ final class WindowChromeController: ObservableObject {
 
         let contentRect = NSRect(origin: .zero, size: contentSize)
         var newFrame = window.frameRect(forContentRect: contentRect)
+        // Size from content; never trust the live window.frame (SwiftUI/chrome can drift).
         if let origin = placementOrigin(for: newFrame.size) {
             newFrame.origin = origin
         }
+        newFrame = newFrame.integral
+        guard !newFrame.equalTo(window.frame) else { return }
         window.setFrame(newFrame, display: true, animate: animated)
     }
 
@@ -185,7 +185,7 @@ final class WindowChromeController: ObservableObject {
         }
         return settings.windowPosition.origin(
             for: size,
-            in: screen.visibleFrame,
+            in: DisplayScreen.placementArea(for: screen),
             margin: Self.screenEdgeMargin
         )
     }

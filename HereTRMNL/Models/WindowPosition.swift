@@ -33,37 +33,40 @@ enum WindowPosition: String, CaseIterable, Identifiable, Sendable {
         return NSImage(systemSymbolName: name, accessibilityDescription: nil) != nil ? name : nil
     }
 
-    func origin(for size: NSSize, in visible: NSRect, margin: CGFloat) -> NSPoint {
-        let clampedWidth = min(size.width, max(0, visible.width - margin * 2))
-        let clampedHeight = min(size.height, max(0, visible.height - margin * 2))
+    /// Place `size` inside `area` with a fixed margin. Coordinates are snapped to whole points.
+    func origin(for size: NSSize, in area: NSRect, margin: CGFloat) -> NSPoint {
+        let width = min(size.width, max(0, area.width - margin * 2))
+        let height = min(size.height, max(0, area.height - margin * 2))
 
+        let point: NSPoint
         switch self {
         case .topLeft:
-            return NSPoint(
-                x: visible.minX + margin,
-                y: visible.maxY - clampedHeight - margin
+            point = NSPoint(
+                x: area.minX + margin,
+                y: area.maxY - height - margin
             )
         case .topRight:
-            return NSPoint(
-                x: visible.maxX - clampedWidth - margin,
-                y: visible.maxY - clampedHeight - margin
+            point = NSPoint(
+                x: area.maxX - width - margin,
+                y: area.maxY - height - margin
             )
         case .bottomLeft:
-            return NSPoint(
-                x: visible.minX + margin,
-                y: visible.minY + margin
+            point = NSPoint(
+                x: area.minX + margin,
+                y: area.minY + margin
             )
         case .bottomRight:
-            return NSPoint(
-                x: visible.maxX - clampedWidth - margin,
-                y: visible.minY + margin
+            point = NSPoint(
+                x: area.maxX - width - margin,
+                y: area.minY + margin
             )
         case .center:
-            return NSPoint(
-                x: visible.midX - size.width / 2,
-                y: visible.midY - size.height / 2
+            point = NSPoint(
+                x: area.midX - size.width / 2,
+                y: area.midY - size.height / 2
             )
         }
+        return NSPoint(x: point.x.rounded(), y: point.y.rounded())
     }
 }
 
@@ -81,6 +84,19 @@ enum DisplayScreen {
     /// Preferred screen, falling back to the menu-bar display.
     static func resolve(preferredID: CGDirectDisplayID) -> NSScreen? {
         screen(forDisplayID: preferredID) ?? NSScreen.screens.first ?? NSScreen.main
+    }
+
+    /// Stable placement area: full screen frame inset by safe areas (menu bar / notch),
+    /// not `visibleFrame` (which jumps when the Dock auto-hides).
+    static func placementArea(for screen: NSScreen) -> NSRect {
+        let frame = screen.frame
+        let insets = screen.safeAreaInsets
+        return NSRect(
+            x: frame.minX + insets.left,
+            y: frame.minY + insets.bottom,
+            width: max(0, frame.width - insets.left - insets.right),
+            height: max(0, frame.height - insets.top - insets.bottom)
+        )
     }
 
     static func localizedName(for screen: NSScreen, index: Int) -> String {

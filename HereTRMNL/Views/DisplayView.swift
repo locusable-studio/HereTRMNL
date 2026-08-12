@@ -97,11 +97,8 @@ struct DisplayView: View {
                 windowChrome.setDeviceContentSize(NSSize(width: size.width, height: size.height))
             }
         }
-        .onChange(of: session.image) { _, image in
+        .onChange(of: session.image) { _, _ in
             syncWindowPreferences()
-            if let image {
-                windowChrome.setDeviceContentSize(from: image)
-            }
         }
     }
 
