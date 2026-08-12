@@ -11,6 +11,15 @@ final class WindowChromeController: ObservableObject {
 
     @Published private(set) var contentSize: NSSize
 
+    /// Device content size after the user-chosen display scale (original / half).
+    var scaledContentSize: NSSize {
+        let scale = settings.windowDisplaySize.scale
+        return NSSize(
+            width: contentSize.width * scale,
+            height: contentSize.height * scale
+        )
+    }
+
     private let settings: AppSettings
     private weak var window: NSWindow?
     private var didAttach = false
@@ -87,13 +96,19 @@ final class WindowChromeController: ObservableObject {
     private func applyChrome() {
         guard let window else { return }
 
-        // Borderless: no title bar means AppKit's default `canBecomeKey`/`canBecomeMain`
-        // are false, so this window never steals focus from other apps.
-        window.styleMask = [.borderless]
+        // Native bordered chrome: continuous rounded corners + system shadow.
+        // NonactivatingDisplayWindow keeps canBecomeKey/Main false so we never steal focus.
+        object_setClass(window, NonactivatingDisplayWindow.self)
+
+        window.styleMask = [.titled, .fullSizeContentView, .closable, .miniaturizable]
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
+        window.titlebarSeparatorStyle = .none
         window.isMovable = false
         window.isMovableByWindowBackground = false
-        window.hasShadow = false
+        window.hasShadow = true
         window.animationBehavior = .none
+        hideTrafficLights()
         applyBackdrop()
     }
 
@@ -111,10 +126,19 @@ final class WindowChromeController: ObservableObject {
         // Always click-through: this window never intercepts mouse input.
         window.ignoresMouseEvents = true
         window.hidesOnDeactivate = false
+        hideTrafficLights()
+        window.toolbar = nil
     }
 
     private func applyBackdrop() {
         window?.backgroundColor = backdropColor
+    }
+
+    private func hideTrafficLights() {
+        guard let window else { return }
+        for buttonType: NSWindow.ButtonType in [.closeButton, .miniaturizeButton, .zoomButton] {
+            window.standardWindowButton(buttonType)?.isHidden = true
+        }
     }
 
     private func installObservers(for window: NSWindow) {
@@ -146,7 +170,7 @@ final class WindowChromeController: ObservableObject {
         let area = DisplayScreen.placementArea(for: screen)
         let margin = Self.screenEdgeMargin
         let fittedContent = WindowPosition.fittedSize(
-            for: contentSize,
+            for: scaledContentSize,
             in: area,
             margin: margin
         )
@@ -212,4 +236,11 @@ final class WindowAttachView: NSView {
             self?.onWindowChange?(window)
         }
     }
+}
+
+/// Keeps the display window from becoming key/main while retaining titled chrome
+/// (rounded corners + shadow).
+final class NonactivatingDisplayWindow: NSWindow {
+    override var canBecomeKey: Bool { false }
+    override var canBecomeMain: Bool { false }
 }

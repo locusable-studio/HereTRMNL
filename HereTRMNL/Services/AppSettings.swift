@@ -14,6 +14,7 @@ final class AppSettings: ObservableObject {
         static let displayTone = "displayTone"
         static let windowPosition = "windowPosition"
         static let preferredScreenID = "preferredScreenID"
+        static let windowDisplaySize = "windowDisplaySize"
     }
 
     /// Committed server base URL string (persisted).
@@ -29,6 +30,10 @@ final class AppSettings: ObservableObject {
 
     @Published var windowPosition: WindowPosition {
         didSet { UserDefaults.standard.set(windowPosition.rawValue, forKey: Keys.windowPosition) }
+    }
+
+    @Published var windowDisplaySize: WindowDisplaySize {
+        didSet { UserDefaults.standard.set(windowDisplaySize.rawValue, forKey: Keys.windowDisplaySize) }
     }
 
     /// `CGDirectDisplayID` of the preferred screen; `0` means primary (menu bar) display.
@@ -87,6 +92,13 @@ final class AppSettings: ObservableObject {
             windowPosition = position
         } else {
             windowPosition = .topRight
+        }
+
+        if let raw = UserDefaults.standard.string(forKey: Keys.windowDisplaySize),
+           let size = WindowDisplaySize(rawValue: raw) {
+            windowDisplaySize = size
+        } else {
+            windowDisplaySize = .original
         }
 
         let storedScreenID = UserDefaults.standard.integer(forKey: Keys.preferredScreenID)

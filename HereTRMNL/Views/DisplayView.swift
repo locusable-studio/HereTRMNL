@@ -91,6 +91,9 @@ struct DisplayView: View {
         .onChange(of: settings.preferredScreenID) { _, _ in
             windowChrome.applyPlacement()
         }
+        .onChange(of: settings.windowDisplaySize) { _, _ in
+            windowChrome.applyPlacement()
+        }
         .onChange(of: session.deviceContentSize) { _, size in
             if let size {
                 windowChrome.setDeviceContentSize(NSSize(width: size.width, height: size.height))

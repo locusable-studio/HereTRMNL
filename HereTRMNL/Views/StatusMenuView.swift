@@ -18,12 +18,6 @@ struct StatusMenuView: View {
             Label(connectionStatusText, systemImage: connectionStatusIcon)
                 .foregroundStyle(connectionStatusColor)
 
-            Button("Connection Settings…") {
-                openSettings()
-                NSApp.activate(ignoringOtherApps: true)
-            }
-            .keyboardShortcut(",")
-
             Divider()
 
             Button("Refresh Now") {
@@ -34,7 +28,7 @@ struct StatusMenuView: View {
 
             Divider()
 
-            Section(String(localized: "Placement")) {
+            Section(String(localized: "Display")) {
                 Picker(String(localized: "Screen"), selection: screenSelection) {
                     ForEach(attachedScreens, id: \.id) { screen in
                         Text(screen.name).tag(screen.id)
@@ -52,26 +46,36 @@ struct StatusMenuView: View {
                         }
                     }
                 }
-            }
 
-            Divider()
+                Picker(String(localized: "Size"), selection: sizeSelection) {
+                    ForEach(WindowDisplaySize.allCases) { size in
+                        Text(size.title).tag(size)
+                    }
+                }
 
-            Toggle(
-                String(localized: "Launch at Login"),
-                isOn: Binding(
-                    get: { settings.launchAtLoginEnabled },
-                    set: { settings.setLaunchAtLogin($0) }
-                )
-            )
-
-            Divider()
-
-            Section(String(localized: "Display")) {
                 Picker(String(localized: "Display Tone"), selection: $settings.displayTone) {
                     ForEach(DisplayTone.allCases) { tone in
                         Text(tone.title).tag(tone)
                     }
                 }
+            }
+
+            Divider()
+
+            Section(String(localized: "General")) {
+                Button("Connection Settings…") {
+                    openSettings()
+                    NSApp.activate(ignoringOtherApps: true)
+                }
+                .keyboardShortcut(",")
+
+                Toggle(
+                    String(localized: "Launch at Login"),
+                    isOn: Binding(
+                        get: { settings.launchAtLoginEnabled },
+                        set: { settings.setLaunchAtLogin($0) }
+                    )
+                )
             }
 
             Divider()
@@ -145,6 +149,16 @@ struct StatusMenuView: View {
             get: { settings.windowPosition },
             set: { newValue in
                 settings.windowPosition = newValue
+                windowChrome.applyPlacement()
+            }
+        )
+    }
+
+    private var sizeSelection: Binding<WindowDisplaySize> {
+        Binding(
+            get: { settings.windowDisplaySize },
+            set: { newValue in
+                settings.windowDisplaySize = newValue
                 windowChrome.applyPlacement()
             }
         )
