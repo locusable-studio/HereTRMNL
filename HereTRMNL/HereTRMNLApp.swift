@@ -17,8 +17,9 @@ struct HereTRMNLApp: App {
         updaterController = SPUStandardUpdaterController(
             startingUpdater: !AppRuntime.isRunningTests,
             updaterDelegate: updaterDelegate,
-            userDriverDelegate: nil
+            userDriverDelegate: updaterDelegate
         )
+        updaterDelegate.updater = updaterController.updater
 
         let settings = AppSettings.shared
         let session = DisplaySession(settings: settings)
@@ -38,11 +39,6 @@ struct HereTRMNLApp: App {
         // Start polling as soon as the app launches — don't wait for the first view pass.
         if !AppRuntime.isRunningTests {
             session.start()
-        }
-
-        if !AppRuntime.isRunningTests,
-           updaterController.updater.automaticallyChecksForUpdates {
-            updaterController.updater.checkForUpdatesInBackground()
         }
     }
 
