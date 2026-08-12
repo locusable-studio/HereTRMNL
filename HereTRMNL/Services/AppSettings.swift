@@ -1,3 +1,4 @@
+import AppKit
 import CoreGraphics
 import Foundation
 
@@ -14,6 +15,11 @@ final class AppSettings: ObservableObject {
         static let displayTone = "displayTone"
         static let windowPosition = "windowPosition"
         static let preferredScreenID = "preferredScreenID"
+        static let showOnAllSpaces = "showOnAllSpaces"
+
+        static func windowPosition(forScreenID id: CGDirectDisplayID) -> String {
+            "windowPosition_\(id)"
+        }
     }
 
     /// Committed server base URL string (persisted).
@@ -24,16 +30,18 @@ final class AppSettings: ObservableObject {
     @Published private(set) var accessToken: String
 
     @Published var displayTone: DisplayTone {
-        didSet { UserDefaults.standard.set(displayTone.rawValue, forKey: Keys.displayTone) }
+        didSet { defaults.set(displayTone.rawValue, forKey: Keys.displayTone) }
     }
 
-    @Published var windowPosition: WindowPosition {
-        didSet { UserDefaults.standard.set(windowPosition.rawValue, forKey: Keys.windowPosition) }
-    }
+    @Published private(set) var windowPosition: WindowPosition
 
     /// `CGDirectDisplayID` of the preferred screen; `0` means primary (menu bar) display.
-    @Published var preferredScreenID: CGDirectDisplayID {
-        didSet { UserDefaults.standard.set(Int(preferredScreenID), forKey: Keys.preferredScreenID) }
+    /// Kept even if that display is temporarily unavailable so reconnect can restore it.
+    @Published private(set) var preferredScreenID: CGDirectDisplayID
+
+    /// When true, the display window joins every Space (Sidefy-compatible default).
+    @Published var showOnAllSpaces: Bool {
+        didSet { defaults.set(showOnAllSpaces, forKey: Keys.showOnAllSpaces) }
     }
 
     @Published var launchAtLoginEnabled: Bool
@@ -60,8 +68,8 @@ final class AppSettings: ObservableObject {
     }
 
     var lastDeviceContentSize: CGSize? {
-        let width = UserDefaults.standard.double(forKey: Keys.lastContentWidth)
-        let height = UserDefaults.standard.double(forKey: Keys.lastContentHeight)
+        let width = defaults.double(forKey: Keys.lastContentWidth)
+        let height = defaults.double(forKey: Keys.lastContentHeight)
         guard width > 0, height > 0 else { return nil }
         return CGSize(width: width, height: height)
     }
@@ -69,31 +77,41 @@ final class AppSettings: ObservableObject {
     init(
         baseURLString: String? = nil,
         deviceID: String? = nil,
-        accessToken: String? = nil
+        accessToken: String? = nil,
+        defaults: UserDefaults = .standard
     ) {
-        self.baseURLString = baseURLString ?? UserDefaults.standard.string(forKey: Keys.baseURL) ?? ""
-        self.deviceID = deviceID ?? UserDefaults.standard.string(forKey: Keys.deviceID) ?? ""
-        self.accessToken = accessToken ?? UserDefaults.standard.string(forKey: Keys.accessToken) ?? ""
+        self.defaults = defaults
+        self.baseURLString = baseURLString ?? defaults.string(forKey: Keys.baseURL) ?? ""
+        self.deviceID = deviceID ?? defaults.string(forKey: Keys.deviceID) ?? ""
+        self.accessToken = accessToken ?? defaults.string(forKey: Keys.accessToken) ?? ""
 
-        if let raw = UserDefaults.standard.string(forKey: Keys.displayTone),
+        if let raw = defaults.string(forKey: Keys.displayTone),
            let tone = DisplayTone(rawValue: raw) {
             displayTone = tone
         } else {
             displayTone = .automatic
         }
 
-        if let raw = UserDefaults.standard.string(forKey: Keys.windowPosition),
+        if let raw = defaults.string(forKey: Keys.windowPosition),
            let position = WindowPosition(rawValue: raw) {
             windowPosition = position
         } else {
             windowPosition = .topRight
         }
 
-        let storedScreenID = UserDefaults.standard.integer(forKey: Keys.preferredScreenID)
+        let storedScreenID = defaults.integer(forKey: Keys.preferredScreenID)
         preferredScreenID = storedScreenID > 0 ? CGDirectDisplayID(storedScreenID) : 0
+
+        if defaults.object(forKey: Keys.showOnAllSpaces) == nil {
+            showOnAllSpaces = true
+        } else {
+            showOnAllSpaces = defaults.bool(forKey: Keys.showOnAllSpaces)
+        }
 
         launchAtLoginEnabled = LaunchAtLogin.isEnabled
     }
+
+    private let defaults: UserDefaults
 
     /// Persist credentials after a successful live server check.
     func applyCredentials(baseURLString: String, deviceID: String, accessToken: String) {
@@ -101,12 +119,59 @@ final class AppSettings: ObservableObject {
         let id = deviceID.trimmingCharacters(in: .whitespacesAndNewlines)
         let token = accessToken.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        UserDefaults.standard.set(url, forKey: Keys.baseURL)
-        UserDefaults.standard.set(id, forKey: Keys.deviceID)
-        UserDefaults.standard.set(token, forKey: Keys.accessToken)
+        defaults.set(url, forKey: Keys.baseURL)
+        defaults.set(id, forKey: Keys.deviceID)
+        defaults.set(token, forKey: Keys.accessToken)
         self.baseURLString = url
         self.deviceID = id
         self.accessToken = token
+    }
+
+    /// Prefer this display; restore its remembered corner (or seed current corner onto it).
+    func selectScreen(_ id: CGDirectDisplayID) {
+        preferredScreenID = id
+        defaults.set(Int(id), forKey: Keys.preferredScreenID)
+
+        if id != 0, let saved = storedPosition(forScreenID: id) {
+            setWindowPosition(saved)
+        } else if id != 0 {
+            persistPosition(windowPosition, forScreenID: id)
+        }
+    }
+
+    /// Update global corner and remember it for the active/resolved display.
+    func selectPosition(_ position: WindowPosition) {
+        setWindowPosition(position)
+        if let screen = DisplayScreen.resolve(preferredID: preferredScreenID) {
+            let resolvedID = DisplayScreen.displayID(of: screen)
+            persistPosition(position, forScreenID: resolvedID)
+        }
+        // Keep the explicitly preferred display's memory even while it is offline.
+        if preferredScreenID != 0 {
+            persistPosition(position, forScreenID: preferredScreenID)
+        }
+    }
+
+    /// Before placing the window: load the resolved screen's corner, or seed global onto it.
+    func syncPositionForResolvedScreen() {
+        guard let screen = DisplayScreen.resolve(preferredID: preferredScreenID) else { return }
+        let screenID = DisplayScreen.displayID(of: screen)
+        guard screenID != 0 else { return }
+        if let saved = storedPosition(forScreenID: screenID) {
+            setWindowPosition(saved)
+        } else {
+            persistPosition(windowPosition, forScreenID: screenID)
+        }
+    }
+
+    func storedPosition(forScreenID id: CGDirectDisplayID) -> WindowPosition? {
+        guard id != 0,
+              let raw = defaults.string(forKey: Keys.windowPosition(forScreenID: id)),
+              let position = WindowPosition(rawValue: raw)
+        else {
+            return nil
+        }
+        return position
     }
 
     func setLaunchAtLogin(_ enabled: Bool) {
@@ -126,8 +191,8 @@ final class AppSettings: ObservableObject {
 
     func rememberDeviceContentSize(_ size: CGSize) {
         guard size.width > 0, size.height > 0 else { return }
-        UserDefaults.standard.set(Double(size.width), forKey: Keys.lastContentWidth)
-        UserDefaults.standard.set(Double(size.height), forKey: Keys.lastContentHeight)
+        defaults.set(Double(size.width), forKey: Keys.lastContentWidth)
+        defaults.set(Double(size.height), forKey: Keys.lastContentHeight)
     }
 
     nonisolated static func url(from raw: String) -> URL? {
@@ -137,5 +202,16 @@ final class AppSettings: ObservableObject {
             return url
         }
         return URL(string: "https://\(trimmed)")
+    }
+
+    private func setWindowPosition(_ position: WindowPosition) {
+        guard windowPosition != position else { return }
+        windowPosition = position
+        defaults.set(position.rawValue, forKey: Keys.windowPosition)
+    }
+
+    private func persistPosition(_ position: WindowPosition, forScreenID id: CGDirectDisplayID) {
+        guard id != 0 else { return }
+        defaults.set(position.rawValue, forKey: Keys.windowPosition(forScreenID: id))
     }
 }

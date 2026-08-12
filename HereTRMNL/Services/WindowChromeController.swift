@@ -9,6 +9,9 @@ final class WindowChromeController: ObservableObject {
     /// Margin from the chosen display's placement area edges.
     static let screenEdgeMargin: CGFloat = 24
 
+    /// Delay after sleep so displays can finish reattaching before we place again.
+    private static let wakeRepositionDelay: TimeInterval = 1.0
+
     @Published private(set) var contentSize: NSSize
 
     private let settings: AppSettings
@@ -16,7 +19,9 @@ final class WindowChromeController: ObservableObject {
     private var didAttach = false
     private var backdropColor: NSColor = .windowBackgroundColor
     private var observers: [NSObjectProtocol] = []
+    private var workspaceObservers: [NSObjectProtocol] = []
     private var attachGeneration = 0
+    private var wakeRepositionWorkItem: DispatchWorkItem?
 
     init(initialContentSize: NSSize? = nil, settings: AppSettings = .shared) {
         self.settings = settings
@@ -70,6 +75,11 @@ final class WindowChromeController: ObservableObject {
         applyContentFrame(animated: animated)
     }
 
+    /// Refresh Space joining from `showOnAllSpaces`.
+    func applyCollectionBehavior() {
+        applyDesktopBehavior()
+    }
+
     private func finishAttach(to window: NSWindow) {
         guard self.window === window else { return }
 
@@ -108,12 +118,15 @@ final class WindowChromeController: ObservableObject {
 
         // Above the wallpaper, below Finder desktop icons.
         window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desktopWindow)) + 1)
-        window.collectionBehavior = [
-            .canJoinAllSpaces,
+        var behavior: NSWindow.CollectionBehavior = [
             .stationary,
             .ignoresCycle,
             .fullScreenAuxiliary,
         ]
+        if settings.showOnAllSpaces {
+            behavior.insert(.canJoinAllSpaces)
+        }
+        window.collectionBehavior = behavior
         // Always click-through: this window never intercepts mouse input.
         window.ignoresMouseEvents = true
         window.hidesOnDeactivate = false
@@ -138,21 +151,46 @@ final class WindowChromeController: ObservableObject {
         }
         observers.removeAll()
 
+        for observer in workspaceObservers {
+            NSWorkspace.shared.notificationCenter.removeObserver(observer)
+        }
+        workspaceObservers.removeAll()
+
         observers.append(NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in
-                self?.normalizePreferredScreenIfNeeded()
                 self?.applyPlacement(animated: false)
+            }
+        })
+
+        workspaceObservers.append(NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didWakeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.scheduleWakeReposition()
             }
         })
     }
 
+    private func scheduleWakeReposition() {
+        wakeRepositionWorkItem?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            self?.applyPlacement(animated: false)
+        }
+        wakeRepositionWorkItem = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.wakeRepositionDelay, execute: work)
+    }
+
     private func applyContentFrame(animated: Bool) {
         guard let window else { return }
-        normalizePreferredScreenIfNeeded()
+
+        // Sidefy: restore per-display corner before computing geometry.
+        settings.syncPositionForResolvedScreen()
 
         guard let screen = DisplayScreen.resolve(preferredID: settings.preferredScreenID) else {
             return
@@ -175,14 +213,6 @@ final class WindowChromeController: ObservableObject {
         )
         guard !newFrame.equalTo(window.frame) else { return }
         window.setFrame(newFrame, display: true, animate: animated)
-    }
-
-    private func normalizePreferredScreenIfNeeded() {
-        let preferred = settings.preferredScreenID
-        guard preferred != 0 else { return }
-        if DisplayScreen.screen(forDisplayID: preferred) == nil {
-            settings.preferredScreenID = 0
-        }
     }
 }
 

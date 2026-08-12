@@ -52,6 +52,17 @@ struct StatusMenuView: View {
                         Text(tone.title).tag(tone)
                     }
                 }
+
+                Toggle(
+                    String(localized: "Show on All Spaces"),
+                    isOn: Binding(
+                        get: { settings.showOnAllSpaces },
+                        set: { newValue in
+                            settings.showOnAllSpaces = newValue
+                            windowChrome.applyCollectionBehavior()
+                        }
+                    )
+                )
             }
 
             Divider()
@@ -132,7 +143,7 @@ struct StatusMenuView: View {
                 return attachedScreens.first?.id ?? 0
             },
             set: { newValue in
-                settings.preferredScreenID = newValue
+                settings.selectScreen(newValue)
                 windowChrome.applyPlacement()
             }
         )
@@ -142,7 +153,7 @@ struct StatusMenuView: View {
         Binding(
             get: { settings.windowPosition },
             set: { newValue in
-                settings.windowPosition = newValue
+                settings.selectPosition(newValue)
                 windowChrome.applyPlacement()
             }
         )
